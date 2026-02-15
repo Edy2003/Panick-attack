@@ -6,7 +6,7 @@ const _schema = i.schema({
       email: i.string().unique().indexed(),
     }),
     profiles: i.entity({
-      displayName: i.string(),
+      displayName: i.string().optional(),
       language: i.string(), // 'uk' | 'en'
       createdAt: i.date(),
       updatedAt: i.date(),
