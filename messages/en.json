@@ -123,6 +123,60 @@
       }
     }
   },
+  "journal": {
+    "title": "Anxiety Journal",
+    "description": "Track your panic attacks, triggers, and progress",
+    "addEntry": "New entry",
+    "noEntries": "No entries yet. Add your first one after a panic attack.",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "exportCSV": "Export CSV",
+    "min": "min",
+    "anxietyLevel": "Anxiety level",
+    "levelLow": "Calm",
+    "levelHigh": "Very strong",
+    "triggers": "Triggers",
+    "symptoms": "Symptoms",
+    "copingTechniques": "What helped",
+    "duration": "Duration",
+    "notes": "Notes",
+    "notesPlaceholder": "How did you feel? What helped?",
+    "chartTitle": "Anxiety level over the last 2 weeks",
+    "totalEntries": "Total entries",
+    "avgLevel": "Average level",
+    "triggerOptions": {
+      "work": "Work",
+      "social": "Social situations",
+      "health": "Health",
+      "finances": "Finances",
+      "relationships": "Relationships",
+      "sleep": "Poor sleep",
+      "caffeine": "Caffeine",
+      "unknown": "Unknown"
+    },
+    "symptomOptions": {
+      "heartRacing": "Heart racing",
+      "breathShort": "Shortness of breath",
+      "dizziness": "Dizziness",
+      "sweating": "Sweating",
+      "trembling": "Trembling",
+      "nausea": "Nausea",
+      "chestPain": "Chest pain",
+      "derealisation": "Derealisation"
+    },
+    "copingOptions": {
+      "breathing": "Breathing",
+      "grounding": "Grounding",
+      "talking": "Talking",
+      "walking": "Walking",
+      "medication": "Medication",
+      "music": "Music",
+      "cold": "Cold water",
+      "nothing": "Nothing"
+    }
+  },
   "grounding": {
     "title": "Grounding 5-4-3-2-1",
     "introTitle": "Grounding Technique",

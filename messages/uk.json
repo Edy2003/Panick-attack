@@ -123,6 +123,60 @@
       }
     }
   },
+  "journal": {
+    "title": "Щоденник тривоги",
+    "description": "Відстежуйте панічні атаки, тригери та прогрес",
+    "addEntry": "Новий запис",
+    "noEntries": "Записів поки немає. Додайте перший після панічної атаки.",
+    "loading": "Завантаження...",
+    "save": "Зберегти",
+    "cancel": "Скасувати",
+    "delete": "Видалити",
+    "exportCSV": "Експорт CSV",
+    "min": "хв",
+    "anxietyLevel": "Рівень тривоги",
+    "levelLow": "Спокійно",
+    "levelHigh": "Дуже сильна",
+    "triggers": "Тригери",
+    "symptoms": "Симптоми",
+    "copingTechniques": "Що допомогло",
+    "duration": "Тривалість",
+    "notes": "Нотатки",
+    "notesPlaceholder": "Що ви відчували? Що допомогло?",
+    "chartTitle": "Рівень тривоги за останні 2 тижні",
+    "totalEntries": "Всього записів",
+    "avgLevel": "Середній рівень",
+    "triggerOptions": {
+      "work": "Робота",
+      "social": "Соціальні ситуації",
+      "health": "Здоров'я",
+      "finances": "Фінанси",
+      "relationships": "Стосунки",
+      "sleep": "Поганий сон",
+      "caffeine": "Кофеїн",
+      "unknown": "Невідомо"
+    },
+    "symptomOptions": {
+      "heartRacing": "Серцебиття",
+      "breathShort": "Задишка",
+      "dizziness": "Запаморочення",
+      "sweating": "Потовиділення",
+      "trembling": "Тремтіння",
+      "nausea": "Нудота",
+      "chestPain": "Біль у грудях",
+      "derealisation": "Дереалізація"
+    },
+    "copingOptions": {
+      "breathing": "Дихання",
+      "grounding": "Заземлення",
+      "talking": "Розмова",
+      "walking": "Прогулянка",
+      "medication": "Ліки",
+      "music": "Музика",
+      "cold": "Холодна вода",
+      "nothing": "Нічого"
+    }
+  },
   "grounding": {
     "title": "Заземлення 5-4-3-2-1",
     "introTitle": "Техніка заземлення",
