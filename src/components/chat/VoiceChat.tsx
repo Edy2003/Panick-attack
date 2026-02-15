@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Send, Loader2 } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
@@ -17,17 +17,21 @@ export function VoiceChat({ language }: VoiceChatProps) {
   const t = useTranslations("chat");
   const [textInput, setTextInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastSpokenRef = useRef<string | null>(null);
 
   const { messages, isLoading, error, sendMessage } = useChat({ language });
 
   const { speak, stop: stopSpeaking, isSpeaking, isSupported: ttsSupported } =
     useSpeechSynthesis({ language });
 
-  const handleResult = (transcript: string) => {
-    if (transcript.trim().length > 0) {
-      sendMessage(transcript);
-    }
-  };
+  const handleResult = useCallback(
+    (transcript: string) => {
+      if (transcript.trim().length > 0) {
+        sendMessage(transcript);
+      }
+    },
+    [sendMessage]
+  );
 
   const {
     isListening,
@@ -44,7 +48,7 @@ export function VoiceChat({ language }: VoiceChatProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Auto-speak assistant replies
+  // Auto-speak assistant replies (track last spoken to prevent re-trigger)
   useEffect(() => {
     if (messages.length === 0) return;
     const lastMessage = messages[messages.length - 1];
@@ -52,8 +56,10 @@ export function VoiceChat({ language }: VoiceChatProps) {
       lastMessage &&
       lastMessage.role === "assistant" &&
       ttsSupported &&
-      !lastMessage.isCrisis
+      !lastMessage.isCrisis &&
+      lastMessage.id !== lastSpokenRef.current
     ) {
+      lastSpokenRef.current = lastMessage.id;
       speak(lastMessage.content);
     }
   }, [messages, ttsSupported, speak]);
@@ -80,7 +86,11 @@ export function VoiceChat({ language }: VoiceChatProps) {
   return (
     <div className="flex h-[calc(100dvh-8rem)] flex-col">
       {/* Messages */}
-      <div className="flex-1 space-y-3 overflow-y-auto pb-4">
+      <div
+        className="flex-1 space-y-3 overflow-y-auto pb-4"
+        role="log"
+        aria-live="polite"
+      >
         {messages.length === 0 && (
           <div className="flex h-full items-center justify-center">
             <p className="text-center text-lg text-muted-foreground">
@@ -127,6 +137,7 @@ export function VoiceChat({ language }: VoiceChatProps) {
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
             placeholder={t("placeholder")}
+            aria-label={t("placeholder")}
             disabled={isLoading}
             className="flex-1 rounded-full border border-input bg-background px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
           />

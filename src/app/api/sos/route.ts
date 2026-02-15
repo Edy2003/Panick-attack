@@ -9,6 +9,7 @@ import { formatSOSMessage } from "@/lib/messaging/message-template";
 import { adminDb } from "@/lib/db-admin";
 
 const MAX_SOS_PER_10MIN = 5;
+const MAX_SOS_LIMITER_ENTRIES = 10000;
 
 // In-memory rate limiter
 const sosRateLimiter = new Map<
@@ -18,6 +19,14 @@ const sosRateLimiter = new Map<
 
 function checkSOSRateLimit(token: string): boolean {
   const now = Date.now();
+
+  // Prevent unbounded growth
+  if (sosRateLimiter.size > MAX_SOS_LIMITER_ENTRIES) {
+    for (const [key, entry] of sosRateLimiter) {
+      if (now > entry.resetAt) sosRateLimiter.delete(key);
+    }
+  }
+
   const entry = sosRateLimiter.get(token);
 
   if (!entry || now > entry.resetAt) {

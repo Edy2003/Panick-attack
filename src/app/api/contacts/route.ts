@@ -86,6 +86,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate WhatsApp number format (E.164)
+    if (body.whatsappNumber) {
+      const phoneRegex = /^\+[1-9]\d{1,14}$/;
+      if (!phoneRegex.test(body.whatsappNumber.trim())) {
+        return NextResponse.json(
+          { error: { code: "INVALID_PHONE", message: "WhatsApp number must be in international format (e.g. +380...)." } },
+          { status: 400 }
+        );
+      }
+    }
+
     // Generate link token for Telegram deep link
     const linkToken = body.telegramUsername ? id() : undefined;
 

@@ -86,7 +86,7 @@ export function SOSButton() {
         aria-label={t("button")}
       >
         <Phone className="h-6 w-6" />
-        <span className="absolute -inset-1 animate-ping rounded-full bg-sos-red/20 dark:bg-sos-red/30" />
+        <span className="absolute -inset-1 animate-ping motion-reduce:animate-none rounded-full bg-sos-red/20 dark:bg-sos-red/30" />
       </button>
 
       <SOSConfirmation

@@ -48,21 +48,27 @@ export default function ContactsPage() {
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [telegramLink, setTelegramLink] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchContacts = useCallback(async () => {
     try {
+      setError(null);
       const token = getDeviceToken();
       const res = await fetch("/api/contacts", {
         headers: { "X-Device-Token": token },
       });
       const data = await res.json();
+      if (!res.ok) {
+        setError(data.error?.message ?? t("error"));
+        return;
+      }
       setContacts(data.contacts ?? []);
     } catch {
-      // ignore
+      setError(t("error"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchContacts();
@@ -98,21 +104,32 @@ export default function ContactsPage() {
         setTelegramUsername("");
         setWhatsappNumber("");
         setShowForm(false);
+        setError(null);
         fetchContacts();
+      } else {
+        setError(data.error?.message ?? t("error"));
       }
     } catch {
-      // ignore
+      setError(t("error"));
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (index: number) => {
-    const token = getDeviceToken();
-    await fetch(`/api/contacts/${index}`, {
-      method: "DELETE",
-      headers: { "X-Device-Token": token },
-    });
+    try {
+      const token = getDeviceToken();
+      const res = await fetch(`/api/contacts/${index}`, {
+        method: "DELETE",
+        headers: { "X-Device-Token": token },
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error?.message ?? t("error"));
+      }
+    } catch {
+      setError(t("error"));
+    }
     fetchContacts();
   };
 
@@ -126,6 +143,12 @@ export default function ContactsPage() {
       </div>
 
       <p className="text-sm text-muted-foreground">{t("contactsDesc")}</p>
+
+      {error && (
+        <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
       {/* Telegram link notification */}
       {telegramLink && (

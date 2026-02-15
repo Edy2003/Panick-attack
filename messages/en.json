@@ -61,7 +61,8 @@
     "saving": "Saving...",
     "loading": "Loading...",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "error": "Something went wrong. Please try again."
   },
   "auth": {
     "title": "Sign In",

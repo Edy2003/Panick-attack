@@ -147,6 +147,8 @@ export function useSOS(language: "uk" | "en" = "uk") {
     if (countdownRef.current) clearInterval(countdownRef.current);
     setIsCountdown(false);
     setCountdown(COUNTDOWN_SECONDS);
+    setLastResult(null);
+    setError(null);
   }, []);
 
   const flushQueue = useCallback(async () => {
