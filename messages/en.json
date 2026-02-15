@@ -123,6 +123,44 @@
       }
     }
   },
+  "grounding": {
+    "title": "Grounding 5-4-3-2-1",
+    "introTitle": "Grounding Technique",
+    "introDesc": "This exercise will help you reconnect with reality through your 5 senses. Name things around you.",
+    "begin": "Begin",
+    "step": "Step",
+    "allDone": "Done!",
+    "inputPlaceholder": "Type or say...",
+    "add": "Add",
+    "stepComplete": "Great! Let's move on",
+    "next": "Next",
+    "finish": "Finish",
+    "finishedTitle": "Well done!",
+    "finishedDesc": "You've completed all 5 steps. You are here, you are safe. How do you feel?",
+    "tryAgain": "Try again",
+    "steps": {
+      "0": {
+        "title": "Name 5 things you can see",
+        "hint": "Look around. What catches your attention?"
+      },
+      "1": {
+        "title": "Name 4 things you can touch",
+        "hint": "What do you feel right now?"
+      },
+      "2": {
+        "title": "Name 3 sounds you can hear",
+        "hint": "Pause and listen."
+      },
+      "3": {
+        "title": "Name 2 things you can smell",
+        "hint": "What can you smell?"
+      },
+      "4": {
+        "title": "Name 1 thing you can taste",
+        "hint": "What taste do you notice right now?"
+      }
+    }
+  },
   "safety": {
     "crisisLine": "Lifeline Ukraine",
     "crisisNumber": "7333",
