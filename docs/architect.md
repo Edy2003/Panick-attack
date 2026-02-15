@@ -2,7 +2,7 @@
 
 Version: 1.0
 Updated: 2026-02-15
-PRD Reference: `docs/prd/prd_panic_attack_helper_20260215.md`
+PRD Reference: `docs/prd.md`
 
 ---
 

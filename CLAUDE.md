@@ -6,9 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 PanicAttack Helper — free PWA for helping people with anxiety disorder during panic attacks. Voice AI assistant (CBT/grounding protocols), SOS button for alerting emergency contacts via Telegram/WhatsApp, breathing exercises, anxiety journal.
 
-**PRD**: `docs/prd/prd_panic_attack_helper_20260215.md`
+**PRD**: `docs/prd.md`
 **Architecture**: `docs/architect.md`
-**Task Assignments**: `docs/prd/task_assignments_20260215.md`
+**Task Assignments**: `docs/tasks.md`
 
 ## Tech Stack
 
@@ -107,7 +107,7 @@ Agent definition files live in `agents/`. Follow the corresponding agent's princ
 **When**: creating PRDs, breaking down requirements, estimating effort, planning sprints, task decomposition.
 - Start with clarification questions before making assumptions
 - Apply detailed dependency reasoning and critical path analysis
-- Generate PRD files (`docs/prd/prd_{name}_{date}.md`) + task assignments (`docs/prd/task_assignments_{date}.md`)
+- Generate PRD files (`docs/prd.md`) + task assignments (`docs/tasks.md`)
 - Every task must have: type, dependencies, acceptance criteria, files to create
 - Identify parallel work streams and flag bottleneck dependencies
 

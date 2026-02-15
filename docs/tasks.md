@@ -1,7 +1,7 @@
 # Task Assignments — PanicAttack Helper
 
 Generated: 2026-02-15 (updated)
-PRD Reference: `prd_panic_attack_helper_20260215.md`
+PRD Reference: `docs/prd.md`
 
 ## Task Assignment Table
 
