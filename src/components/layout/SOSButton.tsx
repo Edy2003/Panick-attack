@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Phone } from "lucide-react";
 
 export function SOSButton() {
   const [isPressed, setIsPressed] = useState(false);
+  const t = useTranslations("sos");
 
   return (
     <button
@@ -26,7 +28,7 @@ export function SOSButton() {
         dark:shadow-sos-red/20 dark:hover:shadow-sos-red/30
         ${isPressed ? "scale-95" : ""}
       `}
-      aria-label="SOS — надіслати сигнал допомоги"
+      aria-label={t("button")}
     >
       <Phone className="h-6 w-6" />
       <span className="absolute -inset-1 animate-ping rounded-full bg-sos-red/20 dark:bg-sos-red/30" />

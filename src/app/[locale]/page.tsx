@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   MessageCircle,
   Wind,
@@ -10,44 +13,44 @@ const quickActions = [
   {
     href: "/chat",
     icon: MessageCircle,
-    title: "Поговорити",
-    description: "AI-асистент допоможе заспокоїтись",
+    titleKey: "chat" as const,
+    descKey: "chatDesc" as const,
     color: "bg-calm-blue/10 text-calm-blue dark:bg-calm-blue/20",
   },
   {
     href: "/exercises/breathing",
     icon: Wind,
-    title: "Дихання",
-    description: "Дихальні вправи для заспокоєння",
+    titleKey: "breathing" as const,
+    descKey: "breathingDesc" as const,
     color: "bg-soft-green/10 text-soft-green dark:bg-soft-green/20",
   },
   {
     href: "/exercises/grounding",
     icon: Hand,
-    title: "Заземлення",
-    description: "Техніка 5-4-3-2-1",
+    titleKey: "grounding" as const,
+    descKey: "groundingDesc" as const,
     color: "bg-lavender/10 text-lavender dark:bg-lavender/20",
   },
   {
     href: "/journal",
     icon: BookOpen,
-    title: "Журнал",
-    description: "Записати що відчуваєш",
+    titleKey: "journal" as const,
+    descKey: "journalDesc" as const,
     color: "bg-peach/10 text-peach dark:bg-peach/20",
   },
 ];
 
 export default function Home() {
+  const t = useTranslations("home");
+
   return (
     <div className="space-y-8">
       {/* Hero */}
       <section className="pt-4 text-center">
         <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-          Ти в безпеці
+          {t("hero")}
         </h1>
-        <p className="mt-2 text-muted-foreground">
-          Обери що допоможе тобі зараз
-        </p>
+        <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
       </section>
 
       {/* Quick actions grid */}
@@ -65,10 +68,10 @@ export default function Home() {
             </div>
             <div>
               <h2 className="font-semibold text-card-foreground">
-                {action.title}
+                {t(action.titleKey)}
               </h2>
               <p className="mt-0.5 text-sm text-muted-foreground">
-                {action.description}
+                {t(action.descKey)}
               </p>
             </div>
           </Link>

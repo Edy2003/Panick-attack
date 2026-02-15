@@ -1,0 +1,45 @@
+{
+  "common": {
+    "appName": "PanicAttack Helper",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "back": "Back",
+    "close": "Close"
+  },
+  "home": {
+    "hero": "You are safe",
+    "subtitle": "Choose what will help you now",
+    "chat": "Talk",
+    "chatDesc": "AI assistant will help you calm down",
+    "breathing": "Breathing",
+    "breathingDesc": "Breathing exercises to calm down",
+    "grounding": "Grounding",
+    "groundingDesc": "5-4-3-2-1 technique",
+    "journal": "Journal",
+    "journalDesc": "Write down how you feel"
+  },
+  "nav": {
+    "home": "Home",
+    "chat": "Chat",
+    "exercises": "Exercises",
+    "journal": "Journal",
+    "library": "Articles"
+  },
+  "sos": {
+    "button": "SOS — send help signal",
+    "confirm": "Send SOS?",
+    "confirmDesc": "A message will be sent to your contacts",
+    "countdown": "Sending in {seconds}s...",
+    "sent": "SOS sent",
+    "failed": "Failed to send SOS"
+  },
+  "safety": {
+    "crisisLine": "Lifeline Ukraine",
+    "crisisNumber": "7333",
+    "crisisMessage": "If you are in danger — call the crisis helpline"
+  }
+}
