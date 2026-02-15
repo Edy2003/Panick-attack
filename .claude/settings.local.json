@@ -17,7 +17,11 @@
       "WebFetch(domain:next-intl.dev)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd i18n: next-intl with uk/en, [locale] routing, composable middleware\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(git log:*)",
+      "Bash(git merge:*)"
     ]
   }
 }
