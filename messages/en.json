@@ -37,6 +37,13 @@
     "sent": "SOS sent",
     "failed": "Failed to send SOS"
   },
+  "chat": {
+    "greeting": "Hi, I'm here to help. How are you feeling?",
+    "placeholder": "Type a message...",
+    "send": "Send",
+    "startListening": "Press to speak",
+    "stopListening": "Press to stop"
+  },
   "safety": {
     "crisisLine": "Lifeline Ukraine",
     "crisisNumber": "7333",
