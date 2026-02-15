@@ -215,6 +215,26 @@
       }
     }
   },
+  "library": {
+    "title": "Library",
+    "description": "Helpful resources about panic attacks and anxiety management",
+    "searchPlaceholder": "Search articles...",
+    "clearSearch": "Clear search",
+    "allArticles": "All",
+    "bookmarked": "Saved",
+    "noResults": "No articles found",
+    "addBookmark": "Save",
+    "removeBookmark": "Remove from saved",
+    "source": "Source",
+    "backToLibrary": "Back to library",
+    "notFound": "Article not found",
+    "categories": {
+      "psychoeducation": "Psychoeducation",
+      "techniques": "Techniques",
+      "support": "Support",
+      "professional": "Professionals"
+    }
+  },
   "safety": {
     "crisisLine": "Lifeline Ukraine",
     "crisisNumber": "7333",

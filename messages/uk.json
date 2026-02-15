@@ -215,6 +215,26 @@
       }
     }
   },
+  "library": {
+    "title": "Бібліотека",
+    "description": "Корисні матеріали про панічні атаки та управління тривогою",
+    "searchPlaceholder": "Пошук статей...",
+    "clearSearch": "Очистити пошук",
+    "allArticles": "Всі",
+    "bookmarked": "Збережені",
+    "noResults": "Статей не знайдено",
+    "addBookmark": "Зберегти",
+    "removeBookmark": "Видалити зі збережених",
+    "source": "Джерело",
+    "backToLibrary": "Повернутись до бібліотеки",
+    "notFound": "Статтю не знайдено",
+    "categories": {
+      "psychoeducation": "Психоосвіта",
+      "techniques": "Техніки",
+      "support": "Підтримка",
+      "professional": "Спеціалісти"
+    }
+  },
   "safety": {
     "crisisLine": "Лайфлайн Україна",
     "crisisNumber": "7333",
