@@ -17,7 +17,7 @@ PanicAttack Helper — free PWA for helping people with anxiety disorder during 
 - **Animations**: Framer Motion
 - **State**: Zustand (global), React state (local)
 - **i18n**: next-intl — Ukrainian (primary), English (secondary)
-- **Database**: Supabase (PostgreSQL + Auth + RLS)
+- **Database**: InstantDB (real-time, offline-first, built-in auth & permissions)
 - **AI**: Anthropic Claude API (Sonnet) via Next.js API routes
 - **Voice**: Web Speech API (SpeechRecognition for STT, SpeechSynthesis for TTS)
 - **SOS Messaging**: Telegram Bot API (primary), Twilio WhatsApp Sandbox (secondary)
@@ -42,12 +42,12 @@ Full architecture with diagrams: `docs/architect.md`
 Key decisions summarized here:
 
 - **Voice AI**: STT → `/api/chat` (Claude Sonnet, max 300 output tokens) → TTS. Safety filter intercepts crisis keywords before AI. Fallback chain: STT fail → text input, TTS fail → text display, offline → static calming script
-- **Dual auth**: Supabase JWT (auth mode) OR device token in `X-Device-Token` header (anon mode). Both provide identical feature access
+- **Auth**: InstantDB built-in auth (Magic Code + Google OAuth). Device tokens via admin SDK for anonymous SOS
 - **SOS security**: contacts resolved server-side (never in request body), rate-limited 5 req/10min per token. Telegram onboarding via deep link + webhook
 - **Offline (Serwist)**: Cache First for exercises/articles, Network Only for AI/SOS. Offline SOS queued in localStorage, flushed on reconnect
-- **State**: Zustand stores → localStorage (`panic-helper:{entity}` keys). Schema versioned via `panic-helper:version`
-- **DB triggers**: `handle_new_user()` auto-creates profile on signup, `update_updated_at()` on profiles/contacts
-- **Middleware**: composable chain — locale detection (TASK-004) + auth check (TASK-009) in single `middleware.ts`
+- **State**: Zustand stores for UI state. InstantDB handles data persistence, real-time sync, and offline cache automatically
+- **Schema**: `instant.schema.ts` (entities + links), `instant.perms.ts` (CEL-based permissions). Push via `npx instant-cli push schema/perms`
+- **Middleware**: locale detection in `middleware.ts` (TASK-004). Auth handled client-side by InstantDB `db.useAuth()`
 
 ## Coding Conventions
 
@@ -111,11 +111,22 @@ Agent definition files live in `agents/`. Follow the corresponding agent's princ
 - Every task must have: type, dependencies, acceptance criteria, files to create
 - Identify parallel work streams and flag bottleneck dependencies
 
+### `agents/designer.md` — UI Designer
+**When**: creating UI, designing components, building design systems, improving visual aesthetics, mobile adaptation.
+- Mobile-first responsive layouts, optimize for thumb-reach
+- Design with Tailwind CSS classes + shadcn/ui components
+- Use 4px/8px spacing grid, smooth corner radius (8-16px)
+- All components must have states: default, hover, focus, active, disabled, loading, error, empty, dark mode
+- Large tap targets (48x48px min), generous whitespace
+- Accessibility built-in: WCAG compliance, keyboard navigation, ARIA labels
+- Framer Motion for micro-interactions, respect `prefers-reduced-motion`
+- Calming palette: avoid bright/aggressive colors (except SOS red #DC2626)
+
 ## Environment Variables
 
 ```
-NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+NEXT_PUBLIC_INSTANT_APP_ID, INSTANT_ADMIN_TOKEN
 ANTHROPIC_API_KEY
-TELEGRAM_BOT_TOKEN
+TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET
 TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM
 ```
