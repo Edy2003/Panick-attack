@@ -80,6 +80,49 @@
     "manageContacts": "Manage contacts",
     "skipAuth": "Continue without signing in"
   },
+  "exercises": {
+    "title": "Exercises",
+    "description": "Choose an exercise to help you calm down",
+    "breathing": "Breathing Exercises",
+    "breathingDesc": "Controlled breathing to reduce anxiety",
+    "grounding": "Grounding 5-4-3-2-1",
+    "groundingDesc": "Reconnect with reality through 5 senses"
+  },
+  "breathing": {
+    "title": "Breathing Exercises",
+    "description": "Choose a technique and follow the animation. Breathe calmly and steadily.",
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop",
+    "restart": "Again",
+    "finished": "Well done!",
+    "finishedDesc": "You've completed the exercise. How do you feel?",
+    "cycle": "Cycle",
+    "cycles": "cycles",
+    "sec": "s",
+    "seconds": "s",
+    "phase": {
+      "inhale": "Inhale",
+      "hold": "Hold",
+      "exhale": "Exhale",
+      "holdAfterExhale": "Hold"
+    },
+    "patterns": {
+      "box": {
+        "name": "Box Breathing"
+      },
+      "fourSevenEight": {
+        "name": "4-7-8 Technique"
+      },
+      "diaphragmatic": {
+        "name": "Diaphragmatic"
+      },
+      "physiologicalSigh": {
+        "name": "Physiological Sigh"
+      }
+    }
+  },
   "safety": {
     "crisisLine": "Lifeline Ukraine",
     "crisisNumber": "7333",
