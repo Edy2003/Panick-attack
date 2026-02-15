@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git mv:*)",
+      "Bash(rd:*)",
+      "Bash(npx create-next-app@latest:*)",
+      "Bash(npm install:*)",
+      "Bash(npx next build)",
+      "Bash(npx shadcn@latest add button card dialog input -y)",
+      "mcp__instant__learn",
+      "WebFetch(domain:www.instantdb.com)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx instant-cli push:*)",
+      "mcp__instant__get-schema",
+      "mcp__instant__get-perms",
+      "WebFetch(domain:next-intl.dev)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd i18n: next-intl with uk/en, [locale] routing, composable middleware\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)"
+    ]
+  }
+}
