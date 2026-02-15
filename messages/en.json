@@ -35,7 +35,9 @@
     "confirmDesc": "A message will be sent to your contacts",
     "countdown": "Sending in {seconds}s...",
     "sent": "SOS sent",
-    "failed": "Failed to send SOS"
+    "failed": "Failed to send SOS",
+    "cancel": "Cancel",
+    "close": "Close"
   },
   "chat": {
     "greeting": "Hi, I'm here to help. How are you feeling?",
@@ -43,6 +45,23 @@
     "send": "Send",
     "startListening": "Press to speak",
     "stopListening": "Press to stop"
+  },
+  "settings": {
+    "contacts": "Emergency Contacts",
+    "contactsDesc": "These people will receive SOS messages when you press the SOS button",
+    "addContact": "Add contact",
+    "deleteContact": "Delete contact",
+    "noContacts": "No contacts yet. Add someone who can help.",
+    "namePlaceholder": "Contact name",
+    "telegramPlaceholder": "Telegram @username",
+    "whatsappPlaceholder": "WhatsApp number (+380...)",
+    "telegramLinkTitle": "Send this link to your contact",
+    "telegramLinkDesc": "The contact needs to tap this link so the bot can send them SOS messages",
+    "copyLink": "Copy link",
+    "saving": "Saving...",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "safety": {
     "crisisLine": "Lifeline Ukraine",
