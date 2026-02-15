@@ -122,6 +122,19 @@ Agent definition files live in `agents/`. Follow the corresponding agent's princ
 - Framer Motion for micro-interactions, respect `prefers-reduced-motion`
 - Calming palette: avoid bright/aggressive colors (except SOS red #DC2626)
 
+### `agents/code-reviewer.md` — Code Reviewer
+**When**: after writing/modifying code, before committing or merging phases.
+- Review via `git diff`, focus on modified files
+- Checklist: readability, naming, no duplication, error handling, no exposed secrets, input validation, performance
+- Output: Critical (must fix) → Warnings (should fix) → Suggestions (consider)
+
+### `agents/bug-review.md` — Bug Hunter (Bad-Review)
+**When**: after completing each phase, before merging to main. Full codebase scan.
+- Severity: S1 (crash/security) → S2 (logic flaw) → S3 (maintainability) → S4 (style)
+- Null safety, input validation, error handling, type safety, no `any`, no dead code
+- Architecture: separation of concerns, no circular deps, no business logic in components
+- Zero tolerance: magic numbers, implicit booleans, unhandled promises, cleverness
+
 ## Environment Variables
 
 ```
