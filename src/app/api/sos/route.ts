@@ -159,9 +159,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Build SOS message
+    // Build SOS message (userName from body or default)
     const message = formatSOSMessage({
-      userName: contacts[0]?.name ?? "User",
+      userName: language === "uk" ? "Користувач" : "User",
       language,
       location,
       timestamp: new Date(),

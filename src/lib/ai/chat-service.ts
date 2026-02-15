@@ -37,8 +37,11 @@ export async function chat(request: ChatRequest): Promise<ChatResponse> {
   // Truncate message to max input tokens (rough: 1 token ≈ 4 chars)
   const truncatedMessage = message.slice(0, MAX_INPUT_TOKENS * 4);
 
-  // Keep only last N messages for context
-  const recentHistory = history.slice(-MAX_HISTORY_MESSAGES);
+  // Keep only last N messages for context, truncate content per message
+  const recentHistory = history.slice(-MAX_HISTORY_MESSAGES).map((msg) => ({
+    ...msg,
+    content: msg.content.slice(0, MAX_INPUT_TOKENS * 4),
+  }));
 
   const client = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,

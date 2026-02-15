@@ -2,14 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { chat } from "@/lib/ai/chat-service";
 
 const MAX_MESSAGE_LENGTH = 500;
-const MAX_SESSIONS_PER_HOUR = 10;
+const MAX_REQUESTS_PER_HOUR = 60;
 const MAX_MESSAGES_PER_SESSION = 30;
+const MAX_RATE_LIMITER_ENTRIES = 10000;
 
 // Simple in-memory rate limiter (resets on deploy)
 const rateLimiter = new Map<string, { count: number; resetAt: number }>();
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
+
+  // Prevent unbounded growth
+  if (rateLimiter.size > MAX_RATE_LIMITER_ENTRIES) {
+    for (const [key, entry] of rateLimiter) {
+      if (now > entry.resetAt) rateLimiter.delete(key);
+    }
+  }
+
   const entry = rateLimiter.get(ip);
 
   if (!entry || now > entry.resetAt) {
@@ -17,7 +26,7 @@ function checkRateLimit(ip: string): boolean {
     return true;
   }
 
-  if (entry.count >= MAX_SESSIONS_PER_HOUR) {
+  if (entry.count >= MAX_REQUESTS_PER_HOUR) {
     return false;
   }
 
@@ -91,22 +100,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check session message limit
-    if (
-      typeof messageCount === "number" &&
-      messageCount >= MAX_MESSAGES_PER_SESSION
-    ) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "SESSION_LIMIT_REACHED",
-            message: "Session message limit reached. Please start a new session.",
-          },
-        },
-        { status: 429 }
-      );
-    }
-
     // Validate history
     const safeHistory = Array.isArray(history)
       ? history
@@ -119,6 +112,19 @@ export async function POST(request: NextRequest) {
           )
           .slice(-20)
       : [];
+
+    // Check session message limit (server-side via history length)
+    if (safeHistory.length >= MAX_MESSAGES_PER_SESSION) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "SESSION_LIMIT_REACHED",
+            message: "Session message limit reached. Please start a new session.",
+          },
+        },
+        { status: 429 }
+      );
+    }
 
     const result = await chat({
       message: message.trim(),

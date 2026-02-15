@@ -1,3 +1,5 @@
+import { timingSafeEqual } from "crypto";
+
 const TELEGRAM_API = "https://api.telegram.org/bot";
 
 function getBotToken(): string {
@@ -24,7 +26,6 @@ export async function sendTelegramMessage(
         body: JSON.stringify({
           chat_id: chatId,
           text,
-          parse_mode: "HTML",
         }),
       }
     );
@@ -46,6 +47,7 @@ export async function sendTelegramMessage(
 
 export function verifyWebhookSecret(secret: string | null): boolean {
   const expected = process.env.TELEGRAM_WEBHOOK_SECRET;
-  if (!expected) return false;
-  return secret === expected;
+  if (!expected || !secret) return false;
+  if (secret.length !== expected.length) return false;
+  return timingSafeEqual(Buffer.from(secret), Buffer.from(expected));
 }

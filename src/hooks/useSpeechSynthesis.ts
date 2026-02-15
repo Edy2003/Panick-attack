@@ -17,10 +17,12 @@ export function useSpeechSynthesis({
   language,
 }: UseSpeechSynthesisOptions): UseSpeechSynthesisReturn {
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSupported, setIsSupported] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  const isSupported =
-    typeof window !== "undefined" && "speechSynthesis" in window;
+  useEffect(() => {
+    setIsSupported("speechSynthesis" in window);
+  }, []);
 
   const speak = useCallback(
     (text: string) => {
@@ -51,7 +53,9 @@ export function useSpeechSynthesis({
 
   useEffect(() => {
     return () => {
-      window.speechSynthesis?.cancel();
+      if (typeof window !== "undefined") {
+        window.speechSynthesis?.cancel();
+      }
     };
   }, []);
 

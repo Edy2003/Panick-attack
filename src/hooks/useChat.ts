@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export interface ChatMessage {
   id: string;
@@ -33,6 +33,8 @@ export function useChat({ language }: UseChatOptions): UseChatReturn {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const messagesRef = useRef<ChatMessage[]>([]);
+  messagesRef.current = messages;
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -50,7 +52,7 @@ export function useChat({ language }: UseChatOptions): UseChatReturn {
       setError(null);
 
       try {
-        const history = messages.map((msg) => ({
+        const history = messagesRef.current.map((msg) => ({
           role: msg.role,
           content: msg.content,
         }));
@@ -62,7 +64,6 @@ export function useChat({ language }: UseChatOptions): UseChatReturn {
             message: content.trim(),
             history,
             language,
-            messageCount: messages.length + 1,
           }),
         });
 
@@ -94,7 +95,7 @@ export function useChat({ language }: UseChatOptions): UseChatReturn {
         setIsLoading(false);
       }
     },
-    [messages, language]
+    [language]
   );
 
   const clearMessages = useCallback(() => {

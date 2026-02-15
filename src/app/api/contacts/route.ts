@@ -67,6 +67,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (body.name.length > 100) {
+      return NextResponse.json(
+        { error: { code: "NAME_TOO_LONG", message: "Name must be under 100 characters." } },
+        { status: 400 }
+      );
+    }
+
     if (!body.telegramUsername && !body.whatsappNumber) {
       return NextResponse.json(
         {
@@ -90,8 +97,16 @@ export async function POST(request: NextRequest) {
       linkToken,
     };
 
-    // Get or create device token record
+    // Check max contacts limit
+    const MAX_CONTACTS = 10;
     let record = await validateDeviceToken(deviceToken);
+
+    if (record && (record.contacts?.length ?? 0) >= MAX_CONTACTS) {
+      return NextResponse.json(
+        { error: { code: "MAX_CONTACTS", message: "Maximum 10 contacts allowed." } },
+        { status: 400 }
+      );
+    }
 
     if (!record) {
       await createDeviceToken(deviceToken, [newContact]);

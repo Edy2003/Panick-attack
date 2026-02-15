@@ -64,10 +64,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
-      // Save telegram chat ID to contact
+      // Save telegram chat ID and invalidate link token to prevent reuse
       await adminDb.transact(
         adminDb.tx.emergencyContacts[contact.id].update({
           telegramChatId: chatId,
+          telegramLinkToken: "",
           isActive: true,
           updatedAt: Date.now(),
         })
