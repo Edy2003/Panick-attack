@@ -63,6 +63,22 @@
     "save": "Зберегти",
     "cancel": "Скасувати"
   },
+  "auth": {
+    "title": "Вхід в акаунт",
+    "subtitle": "Увійдіть щоб синхронізувати дані між пристроями",
+    "emailPlaceholder": "Ваш email",
+    "sendCode": "Надіслати код",
+    "codeSent": "Код надіслано на {email}",
+    "codePlaceholder": "Введіть код",
+    "verify": "Підтвердити",
+    "changeEmail": "Змінити email",
+    "sendError": "Не вдалося надіслати код",
+    "codeError": "Невірний код",
+    "loggedIn": "Ви увійшли",
+    "signOut": "Вийти",
+    "manageContacts": "Керувати контактами",
+    "skipAuth": "Продовжити без входу"
+  },
   "safety": {
     "crisisLine": "Лайфлайн Україна",
     "crisisNumber": "7333",

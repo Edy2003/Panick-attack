@@ -63,6 +63,22 @@
     "save": "Save",
     "cancel": "Cancel"
   },
+  "auth": {
+    "title": "Sign In",
+    "subtitle": "Sign in to sync your data across devices",
+    "emailPlaceholder": "Your email",
+    "sendCode": "Send code",
+    "codeSent": "Code sent to {email}",
+    "codePlaceholder": "Enter code",
+    "verify": "Verify",
+    "changeEmail": "Change email",
+    "sendError": "Failed to send code",
+    "codeError": "Invalid code",
+    "loggedIn": "You are signed in",
+    "signOut": "Sign out",
+    "manageContacts": "Manage contacts",
+    "skipAuth": "Continue without signing in"
+  },
   "safety": {
     "crisisLine": "Lifeline Ukraine",
     "crisisNumber": "7333",
