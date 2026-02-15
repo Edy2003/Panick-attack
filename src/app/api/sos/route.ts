@@ -150,8 +150,23 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Get contacts — try device token first
-    const contacts = await getContactsForToken(deviceToken);
+    // Get contacts — try device token first, then authenticated user
+    let contacts = await getContactsForToken(deviceToken);
+
+    if (contacts.length === 0) {
+      // Try auth-based contacts if user is authenticated
+      const authToken = request.headers.get("authorization")?.replace("Bearer ", "");
+      if (authToken) {
+        try {
+          const user = await adminDb.auth.verifyToken(authToken);
+          if (user?.id) {
+            contacts = await getContactsForUser(user.id);
+          }
+        } catch {
+          // Auth verification failed, continue with empty contacts
+        }
+      }
+    }
 
     if (contacts.length === 0) {
       return NextResponse.json(
