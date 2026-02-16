@@ -16,7 +16,7 @@ PanicAttack Helper — free PWA for helping people with anxiety disorder during 
 - **State**: React local state + InstantDB real-time subscriptions. Zustand is installed but not yet used
 - **i18n**: next-intl — Ukrainian (primary, `uk`), English (secondary, `en`). Translation files: `messages/uk.json`, `messages/en.json`
 - **Database**: InstantDB (real-time, offline-first, built-in auth & permissions). Schema: `instant.schema.ts`, Permissions: `instant.perms.ts`
-- **AI**: Google Gemini 2.0 Flash (gemini-2.0-flash-exp, FREE tier — 1500 req/day) via `/api/chat` route
+- **AI**: Google Gemini 2.5 Flash (gemini-2.5-flash, FREE tier — 1500 req/day) via `/api/chat` route
 - **Voice**: Web Speech API (SpeechRecognition for STT, SpeechSynthesis for TTS)
 - **SOS Messaging**: Telegram Bot API (primary), Twilio WhatsApp Sandbox (secondary)
 - **PWA**: Serwist (not yet configured — TASK-014)

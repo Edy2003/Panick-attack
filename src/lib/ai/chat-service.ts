@@ -45,8 +45,26 @@ export async function chat(request: ChatRequest): Promise<ChatResponse> {
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash-exp",
+    model: "gemini-2.5-flash",
     systemInstruction: getSystemPrompt(language),
+    safetySettings: [
+      {
+        category: "HARM_CATEGORY_HARASSMENT",
+        threshold: "BLOCK_NONE",
+      },
+      {
+        category: "HARM_CATEGORY_HATE_SPEECH",
+        threshold: "BLOCK_NONE",
+      },
+      {
+        category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        threshold: "BLOCK_NONE",
+      },
+      {
+        category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+        threshold: "BLOCK_NONE",
+      },
+    ],
   });
 
   // Convert history to Gemini format
@@ -63,7 +81,16 @@ export async function chat(request: ChatRequest): Promise<ChatResponse> {
     },
   });
 
-  const result = await chat.sendMessage(truncatedMessage);
+  let result;
+  try {
+    result = await chat.sendMessage(truncatedMessage);
+  } catch (error) {
+    console.error("Gemini API error:", error);
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to generate response"
+    );
+  }
+
   const aiReply = result.response.text();
 
   // Post-receive safety filter
