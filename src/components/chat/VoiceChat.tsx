@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, Mic, Keyboard } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
@@ -13,9 +13,12 @@ interface VoiceChatProps {
   language: "uk" | "en";
 }
 
+type InputMode = "voice" | "text";
+
 export function VoiceChat({ language }: VoiceChatProps) {
   const t = useTranslations("chat");
   const [textInput, setTextInput] = useState("");
+  const [inputMode, setInputMode] = useState<InputMode>("voice");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastSpokenRef = useRef<string | null>(null);
 
@@ -85,6 +88,34 @@ export function VoiceChat({ language }: VoiceChatProps) {
 
   return (
     <div className="flex h-[calc(100dvh-8rem)] flex-col">
+      {/* Mode Toggle */}
+      <div className="mb-3 flex items-center justify-center gap-2">
+        <button
+          onClick={() => setInputMode("voice")}
+          className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+            inputMode === "voice"
+              ? "bg-calm-blue text-white"
+              : "bg-muted text-muted-foreground hover:bg-muted/80"
+          }`}
+          aria-label={t("voiceMode")}
+        >
+          <Mic className="h-4 w-4" />
+          {t("voiceMode")}
+        </button>
+        <button
+          onClick={() => setInputMode("text")}
+          className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+            inputMode === "text"
+              ? "bg-calm-blue text-white"
+              : "bg-muted text-muted-foreground hover:bg-muted/80"
+          }`}
+          aria-label={t("textMode")}
+        >
+          <Keyboard className="h-4 w-4" />
+          {t("textMode")}
+        </button>
+      </div>
+
       {/* Messages */}
       <div
         className="flex-1 space-y-3 overflow-y-auto pb-4"
@@ -118,39 +149,60 @@ export function VoiceChat({ language }: VoiceChatProps) {
         </div>
       )}
 
-      {/* Input bar */}
-      <div className="flex items-center gap-2 border-t border-border/50 pt-3">
-        {sttSupported && (
-          <VoiceButton
-            isListening={isListening}
-            isSpeaking={isSpeaking}
-            isSupported={sttSupported}
-            onToggle={handleToggleVoice}
-            ariaLabel={
+      {/* Input - Voice Mode */}
+      {inputMode === "voice" && sttSupported && (
+        <div className="flex flex-col items-center gap-3 border-t border-border/50 pt-4">
+          <p className="text-sm text-muted-foreground">
+            {isListening
+              ? t("listeningHint")
+              : t("tapToSpeak")}
+          </p>
+          <button
+            onClick={handleToggleVoice}
+            disabled={isLoading}
+            className={`flex h-20 w-20 items-center justify-center rounded-full transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/30 disabled:opacity-50 ${
+              isListening
+                ? "animate-pulse bg-sos-red shadow-lg shadow-sos-red/30"
+                : "bg-calm-blue shadow-lg shadow-calm-blue/30 hover:scale-105"
+            }`}
+            aria-label={
               isListening ? t("stopListening") : t("startListening")
             }
-          />
-        )}
-        <form onSubmit={handleTextSubmit} className="flex flex-1 gap-2">
-          <input
-            type="text"
-            value={textInput}
-            onChange={(e) => setTextInput(e.target.value)}
-            placeholder={t("placeholder")}
-            aria-label={t("placeholder")}
-            disabled={isLoading}
-            className="flex-1 rounded-full border border-input bg-background px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
-          />
-          <button
-            type="submit"
-            disabled={isLoading || textInput.trim().length === 0}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-            aria-label={t("send")}
           >
-            <Send className="h-4 w-4" />
+            <Mic className="h-8 w-8 text-white" />
           </button>
-        </form>
-      </div>
+          {isSpeaking && (
+            <p className="text-xs text-muted-foreground">
+              {t("speaking")}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Input - Text Mode */}
+      {inputMode === "text" && (
+        <div className="flex items-center gap-2 border-t border-border/50 pt-3">
+          <form onSubmit={handleTextSubmit} className="flex flex-1 gap-2">
+            <input
+              type="text"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              placeholder={t("placeholder")}
+              aria-label={t("placeholder")}
+              disabled={isLoading}
+              className="flex-1 rounded-full border border-input bg-background px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-50"
+            />
+            <button
+              type="submit"
+              disabled={isLoading || textInput.trim().length === 0}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+              aria-label={t("send")}
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

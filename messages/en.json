@@ -44,7 +44,12 @@
     "placeholder": "Type a message...",
     "send": "Send",
     "startListening": "Press to speak",
-    "stopListening": "Press to stop"
+    "stopListening": "Press to stop",
+    "voiceMode": "Voice",
+    "textMode": "Text",
+    "listeningHint": "I'm listening... Speak now",
+    "tapToSpeak": "Tap to speak",
+    "speaking": "Speaking response..."
   },
   "settings": {
     "contacts": "Emergency Contacts",

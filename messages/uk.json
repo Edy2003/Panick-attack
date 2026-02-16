@@ -44,7 +44,12 @@
     "placeholder": "Напиши повідомлення...",
     "send": "Надіслати",
     "startListening": "Натисни щоб говорити",
-    "stopListening": "Натисни щоб зупинити"
+    "stopListening": "Натисни щоб зупинити",
+    "voiceMode": "Голосом",
+    "textMode": "Текстом",
+    "listeningHint": "Я слухаю... Говоріть",
+    "tapToSpeak": "Натисніть щоб говорити",
+    "speaking": "Промовляю відповідь..."
   },
   "settings": {
     "contacts": "Екстрені контакти",
