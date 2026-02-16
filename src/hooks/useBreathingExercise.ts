@@ -32,8 +32,8 @@ export function useBreathingExercise(pattern: BreathingPattern) {
   });
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const stateRef = useRef(state);
-  stateRef.current = state;
+  const patternRef = useRef(pattern);
+  patternRef.current = pattern;
 
   const clearTimer = useCallback(() => {
     if (intervalRef.current) {
@@ -53,6 +53,7 @@ export function useBreathingExercise(pattern: BreathingPattern) {
     setState((prev) => {
       if (prev.status !== "running") return prev;
 
+      const p = patternRef.current;
       const newTimeLeft = Math.round((prev.phaseTimeLeft - TICK_MS / 1000) * 10) / 10;
 
       if (newTimeLeft > 0) {
@@ -62,9 +63,9 @@ export function useBreathingExercise(pattern: BreathingPattern) {
       // Phase complete — move to next step
       const nextStepIndex = prev.currentStepIndex + 1;
 
-      if (nextStepIndex < pattern.steps.length) {
+      if (nextStepIndex < p.steps.length) {
         // Next step within same cycle
-        const nextStep = pattern.steps[nextStepIndex];
+        const nextStep = p.steps[nextStepIndex];
         return {
           ...prev,
           currentStepIndex: nextStepIndex,
@@ -83,7 +84,7 @@ export function useBreathingExercise(pattern: BreathingPattern) {
       }
 
       // Start next cycle
-      const firstStep = pattern.steps[0];
+      const firstStep = p.steps[0];
       return {
         ...prev,
         currentStepIndex: 0,
@@ -93,16 +94,16 @@ export function useBreathingExercise(pattern: BreathingPattern) {
         cycle: nextCycle,
       };
     });
-  }, [pattern]);
+  }, []);
 
-  // Phase transition — vibrate
-  const prevPhaseRef = useRef(state.currentPhase);
+  // Phase transition — vibrate (track stepIndex to handle same-phase consecutive steps)
+  const prevStepRef = useRef(state.currentStepIndex);
   useEffect(() => {
-    if (state.currentPhase !== prevPhaseRef.current && state.status === "running") {
+    if (state.currentStepIndex !== prevStepRef.current && state.status === "running") {
       vibrate(50);
-      prevPhaseRef.current = state.currentPhase;
+      prevStepRef.current = state.currentStepIndex;
     }
-  }, [state.currentPhase, state.status, vibrate]);
+  }, [state.currentStepIndex, state.status, vibrate]);
 
   const start = useCallback(() => {
     clearTimer();
@@ -126,9 +127,10 @@ export function useBreathingExercise(pattern: BreathingPattern) {
   }, [clearTimer]);
 
   const resume = useCallback(() => {
+    clearTimer();
     setState((prev) => ({ ...prev, status: "running" }));
     intervalRef.current = setInterval(tick, TICK_MS);
-  }, [tick]);
+  }, [clearTimer, tick]);
 
   const stop = useCallback(() => {
     clearTimer();

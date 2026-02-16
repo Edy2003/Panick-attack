@@ -23,9 +23,10 @@ export function useJournal() {
   }, [refresh]);
 
   const add = useCallback(
-    (entry: Omit<JournalEntry, "id" | "createdAt">) => {
-      addEntry(entry);
+    (entry: Omit<JournalEntry, "id" | "createdAt">): boolean => {
+      const result = addEntry(entry);
       refresh();
+      return result !== null;
     },
     [refresh]
   );
@@ -39,14 +40,20 @@ export function useJournal() {
   );
 
   const exportData = useCallback((format: "json" | "csv") => {
-    const result = exportEntries(format);
-    const blob = new Blob([result.data], { type: result.mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = result.filename;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const result = exportEntries(format);
+      const blob = new Blob([result.data], { type: result.mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = result.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // Export failed silently — no user-facing error surface in this hook
+    }
   }, []);
 
   return { entries, loading, add, remove, exportData, refresh };

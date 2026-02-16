@@ -468,6 +468,7 @@ export function getBookmarks(): string[] {
 }
 
 export function toggleBookmark(slug: string): boolean {
+  if (typeof window === "undefined") return false;
   const bookmarks = getBookmarks();
   const index = bookmarks.indexOf(slug);
   if (index >= 0) {
@@ -475,7 +476,11 @@ export function toggleBookmark(slug: string): boolean {
   } else {
     bookmarks.push(slug);
   }
-  localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bookmarks));
+  try {
+    localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bookmarks));
+  } catch {
+    return false;
+  }
   return index < 0; // returns true if added
 }
 

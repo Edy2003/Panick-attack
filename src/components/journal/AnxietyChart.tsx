@@ -20,7 +20,7 @@ export function AnxietyChart({ entries, days = 14 }: AnxietyChartProps) {
     // Group by day
     const byDay = new Map<string, number[]>();
     for (const entry of recent) {
-      const date = new Date(entry.createdAt).toLocaleDateString();
+      const date = new Date(entry.createdAt).toISOString().slice(0, 10);
       const existing = byDay.get(date) ?? [];
       existing.push(entry.anxietyLevel);
       byDay.set(date, existing);

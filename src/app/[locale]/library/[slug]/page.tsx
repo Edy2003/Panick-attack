@@ -7,7 +7,7 @@ import { ArrowLeft, Bookmark, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import {
   getArticle,
-  isBookmarked as checkBookmarked,
+  isBookmarked,
   toggleBookmark,
 } from "@/lib/content/articles";
 
@@ -15,13 +15,14 @@ export default function ArticlePage() {
   const params = useParams();
   const locale = useLocale();
   const t = useTranslations("library");
-  const slug = params.slug as string;
+  const rawSlug = params.slug;
+  const slug = typeof rawSlug === "string" ? rawSlug : Array.isArray(rawSlug) ? rawSlug[0] ?? "" : "";
 
   const article = getArticle(locale, slug);
   const [bookmarked, setBookmarked] = useState(false);
 
   useEffect(() => {
-    setBookmarked(checkBookmarked(slug));
+    setBookmarked(isBookmarked(slug));
   }, [slug]);
 
   if (!article) {
@@ -40,7 +41,7 @@ export default function ArticlePage() {
 
   const handleToggle = () => {
     toggleBookmark(slug);
-    setBookmarked(!bookmarked);
+    setBookmarked(isBookmarked(slug));
   };
 
   // Simple markdown-to-HTML rendering (headings, bold, lists, paragraphs)
@@ -76,20 +77,29 @@ export default function ArticlePage() {
         );
       }
 
-      // List
-      if (trimmed.includes("\n-")) {
+      // Unordered list
+      if (trimmed.startsWith("- ") || trimmed.includes("\n- ")) {
         const lines = trimmed.split("\n").filter(Boolean);
+        const listItems = lines.filter((line) => /^-\s/.test(line));
+        const nonListLines = lines.filter((line) => !/^-\s/.test(line));
         return (
-          <ul key={i} className="ml-4 list-disc space-y-1 text-sm">
-            {lines.map((line, j) => {
-              const content = line.replace(/^-\s*/, "");
-              return (
-                <li key={j}>
-                  {renderInline(content)}
-                </li>
-              );
-            })}
-          </ul>
+          <div key={i}>
+            {nonListLines.length > 0 && (
+              <p className="mb-1 text-sm leading-relaxed">
+                {renderInline(nonListLines.join(" "))}
+              </p>
+            )}
+            <ul className="ml-4 list-disc space-y-1 text-sm">
+              {listItems.map((line, j) => {
+                const content = line.replace(/^-\s*/, "");
+                return (
+                  <li key={j}>
+                    {renderInline(content)}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         );
       }
 
@@ -141,6 +151,7 @@ export default function ArticlePage() {
         <Link
           href={`/${locale}/library`}
           className="text-muted-foreground hover:text-foreground"
+          aria-label={t("backToLibrary")}
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>

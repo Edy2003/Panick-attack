@@ -17,7 +17,7 @@ export default function BreathingPage() {
   const [selectedPattern, setSelectedPattern] = useState("box");
 
   const pattern = useMemo(
-    () => BREATHING_PATTERNS[selectedPattern],
+    () => BREATHING_PATTERNS[selectedPattern] ?? BREATHING_PATTERNS.box,
     [selectedPattern]
   );
 
@@ -49,6 +49,7 @@ export default function BreathingPage() {
         <Link
           href={`/${locale}/exercises`}
           className="text-muted-foreground hover:text-foreground"
+          aria-label={t("backToExercises")}
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>

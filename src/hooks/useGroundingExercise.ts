@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export interface GroundingItem {
   text: string;
@@ -23,6 +23,11 @@ export function useGroundingExercise() {
     STEP_COUNTS.map(() => ({ items: [] }))
   );
 
+  const statusRef = useRef(status);
+  statusRef.current = status;
+  const currentStepRef = useRef(currentStep);
+  currentStepRef.current = currentStep;
+
   const requiredCount = STEP_COUNTS[currentStep] ?? 0;
   const currentItems = steps[currentStep]?.items ?? [];
   const isStepComplete = currentItems.length >= requiredCount;
@@ -35,20 +40,21 @@ export function useGroundingExercise() {
 
   const addItem = useCallback(
     (text: string) => {
-      if (status !== "active") return;
+      if (statusRef.current !== "active") return;
+      const step = currentStepRef.current;
 
       setSteps((prev) => {
         const updated = [...prev];
-        const step = updated[currentStep];
-        if (!step || step.items.length >= STEP_COUNTS[currentStep]) return prev;
+        const current = updated[step];
+        if (!current || current.items.length >= STEP_COUNTS[step]) return prev;
 
-        updated[currentStep] = {
-          items: [...step.items, { text: text.trim(), timestamp: Date.now() }],
+        updated[step] = {
+          items: [...current.items, { text: text.trim(), timestamp: Date.now() }],
         };
         return updated;
       });
     },
-    [status, currentStep]
+    []
   );
 
   const nextStep = useCallback(() => {

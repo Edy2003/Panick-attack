@@ -6,7 +6,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { GroundingItem } from "@/hooks/useGroundingExercise";
+import { TOTAL_STEPS, type GroundingItem } from "@/hooks/useGroundingExercise";
 
 interface GroundingStepProps {
   stepIndex: number; // 0-based
@@ -18,12 +18,12 @@ interface GroundingStepProps {
 }
 
 const SENSE_ICONS = ["👁️", "✋", "👂", "👃", "👅"];
-const STEP_COLORS = [
-  "calm-blue",
-  "lavender",
-  "soft-green",
-  "peach",
-  "calm-blue",
+const STEP_BG_CLASSES = [
+  "bg-calm-blue/20",
+  "bg-lavender/20",
+  "bg-soft-green/20",
+  "bg-peach/20",
+  "bg-calm-blue/20",
 ];
 
 export function GroundingStep({
@@ -39,7 +39,7 @@ export function GroundingStep({
   const [input, setInput] = useState("");
 
   const senseIcon = SENSE_ICONS[stepIndex] ?? "👁️";
-  const color = STEP_COLORS[stepIndex] ?? "calm-blue";
+  const bgClass = STEP_BG_CLASSES[stepIndex] ?? "bg-calm-blue/20";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +73,7 @@ export function GroundingStep({
         {items.map((item, i) => (
           <motion.span
             key={i}
-            className={`inline-flex items-center gap-1 rounded-full bg-${color}/20 px-3 py-1.5 text-sm font-medium`}
+            className={`inline-flex items-center gap-1 rounded-full ${bgClass} px-3 py-1.5 text-sm font-medium`}
             initial={prefersReducedMotion ? {} : { scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.2 }}
@@ -92,6 +92,7 @@ export function GroundingStep({
             onChange={(e) => setInput(e.target.value)}
             placeholder={t("inputPlaceholder")}
             aria-label={t("inputPlaceholder")}
+            maxLength={200}
             autoFocus
             className="flex-1"
           />
@@ -110,7 +111,7 @@ export function GroundingStep({
             {t("stepComplete")}
           </p>
           <Button onClick={onNext} size="lg">
-            {stepIndex < 4 ? t("next") : t("finish")}
+            {stepIndex < TOTAL_STEPS - 1 ? t("next") : t("finish")}
           </Button>
         </div>
       )}

@@ -96,6 +96,7 @@
     "resume": "Resume",
     "stop": "Stop",
     "restart": "Again",
+    "backToExercises": "Back to exercises",
     "finished": "Well done!",
     "finishedDesc": "You've completed the exercise. How do you feel?",
     "cycle": "Cycle",
@@ -178,6 +179,7 @@
     }
   },
   "grounding": {
+    "backToExercises": "Back to exercises",
     "title": "Grounding 5-4-3-2-1",
     "introTitle": "Grounding Technique",
     "introDesc": "This exercise will help you reconnect with reality through your 5 senses. Name things around you.",
