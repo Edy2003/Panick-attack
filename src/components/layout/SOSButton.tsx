@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
-import { Phone } from "lucide-react";
+import { Phone, Lock } from "lucide-react";
 import { useSOS } from "@/hooks/useSOS";
 import { SOSConfirmation } from "@/components/sos/SOSConfirmation";
 
@@ -11,6 +11,7 @@ export function SOSButton() {
   const [isPressed, setIsPressed] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const t = useTranslations("sos");
+  const tCommon = useTranslations("common");
   const locale = useLocale() as "uk" | "en";
 
   const {
@@ -21,15 +22,8 @@ export function SOSButton() {
     error,
     startCountdown,
     cancelCountdown,
-    flushQueue,
+    isAuthenticated,
   } = useSOS(locale);
-
-  // Flush offline queue when coming back online
-  useEffect(() => {
-    const handleOnline = () => flushQueue();
-    window.addEventListener("online", handleOnline);
-    return () => window.removeEventListener("online", handleOnline);
-  }, [flushQueue]);
 
   const handlePress = useCallback(() => {
     setShowConfirm(true);
@@ -66,27 +60,37 @@ export function SOSButton() {
       <button
         type="button"
         onClick={handlePress}
-        onMouseDown={() => setIsPressed(true)}
+        onMouseDown={() => isAuthenticated && setIsPressed(true)}
         onMouseUp={() => setIsPressed(false)}
         onMouseLeave={() => setIsPressed(false)}
-        onTouchStart={() => setIsPressed(true)}
+        onTouchStart={() => isAuthenticated && setIsPressed(true)}
         onTouchEnd={() => setIsPressed(false)}
+        disabled={!isAuthenticated}
         className={`
           fixed bottom-20 right-4 z-50
           flex h-14 w-14 items-center justify-center
-          rounded-full bg-sos-red text-white
-          shadow-lg shadow-sos-red/30
+          rounded-full text-white
+          shadow-lg
           transition-all duration-200
-          hover:shadow-xl hover:shadow-sos-red/40
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sos-red focus-visible:ring-offset-2
-          active:scale-95
-          dark:shadow-sos-red/20 dark:hover:shadow-sos-red/30
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+          ${
+            isAuthenticated
+              ? "bg-sos-red shadow-sos-red/30 hover:shadow-xl hover:shadow-sos-red/40 focus-visible:ring-sos-red active:scale-95 dark:shadow-sos-red/20 dark:hover:shadow-sos-red/30"
+              : "bg-gray-400 shadow-gray-400/30 cursor-not-allowed opacity-60"
+          }
           ${isPressed ? "scale-95" : ""}
         `}
-        aria-label={t("button")}
+        aria-label={isAuthenticated ? t("button") : tCommon("signInRequired")}
+        title={isAuthenticated ? t("button") : tCommon("signInRequired")}
       >
-        <Phone className="h-6 w-6" />
-        <span className="absolute -inset-1 animate-ping motion-reduce:animate-none rounded-full bg-sos-red/20 dark:bg-sos-red/30" />
+        {isAuthenticated ? (
+          <Phone className="h-6 w-6" />
+        ) : (
+          <Lock className="h-6 w-6" />
+        )}
+        {isAuthenticated && (
+          <span className="absolute -inset-1 animate-ping motion-reduce:animate-none rounded-full bg-sos-red/20 dark:bg-sos-red/30" />
+        )}
       </button>
 
       <SOSConfirmation

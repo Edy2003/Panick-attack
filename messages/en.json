@@ -11,7 +11,8 @@
     "close": "Close",
     "switchLanguage": "Switch language",
     "signIn": "Sign In",
-    "profile": "Profile"
+    "profile": "Profile",
+    "signInRequired": "Sign in required"
   },
   "home": {
     "hero": "You are safe",
@@ -68,10 +69,22 @@
     "telegramLinkDesc": "The contact needs to tap this link so the bot can send them SOS messages",
     "copyLink": "Copy link",
     "saving": "Saving...",
+    "generating": "Generating...",
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
-    "error": "Something went wrong. Please try again."
+    "error": "Something went wrong. Please try again.",
+    "generateInvite": "Generate Invite",
+    "shareInvite": "Share this link",
+    "shareInviteDesc": "Send this link to a contact or add it to a Telegram group",
+    "pendingInvites": "Pending Invites",
+    "activeContacts": "Active Contacts",
+    "waitingForAcceptance": "Waiting for acceptance",
+    "private": "Private chat",
+    "group": "Group",
+    "maxContactsReached": "Maximum 10 contacts reached",
+    "authRequired": "Sign in required",
+    "authRequiredDesc": "Sign in to manage emergency contacts"
   },
   "auth": {
     "title": "Sign In",

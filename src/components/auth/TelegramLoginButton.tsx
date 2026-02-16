@@ -41,6 +41,7 @@ export function TelegramLoginButton() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-Instant-User-Id": user.id,
           },
           body: JSON.stringify(telegramUser),
         });

@@ -1,23 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  validateDeviceToken,
-  getDeviceTokenFromHeader,
-} from "@/lib/auth/device-token";
 import { sendTelegramMessage } from "@/lib/messaging/telegram";
-import { sendWhatsAppMessage } from "@/lib/messaging/whatsapp";
 import { formatSOSMessage } from "@/lib/messaging/message-template";
 import { adminDb } from "@/lib/db-admin";
 
 const MAX_SOS_PER_10MIN = 5;
 const MAX_SOS_LIMITER_ENTRIES = 10000;
 
-// In-memory rate limiter
+// In-memory rate limiter (now using user ID instead of device token)
 const sosRateLimiter = new Map<
   string,
   { count: number; resetAt: number }
 >();
 
-function checkSOSRateLimit(token: string): boolean {
+function checkSOSRateLimit(userId: string): boolean {
   const now = Date.now();
 
   // Prevent unbounded growth
@@ -27,10 +22,10 @@ function checkSOSRateLimit(token: string): boolean {
     }
   }
 
-  const entry = sosRateLimiter.get(token);
+  const entry = sosRateLimiter.get(userId);
 
   if (!entry || now > entry.resetAt) {
-    sosRateLimiter.set(token, { count: 1, resetAt: now + 600_000 });
+    sosRateLimiter.set(userId, { count: 1, resetAt: now + 600_000 });
     return true;
   }
 
@@ -45,81 +40,22 @@ interface SOSRequestBody {
   language?: "uk" | "en";
 }
 
-interface ContactForSOS {
-  id: string;
-  name: string;
-  telegramChatId?: string;
-  whatsappNumber?: string;
-}
-
-async function getContactsForToken(
-  token: string
-): Promise<ContactForSOS[]> {
-  // Try device token contacts (anon mode)
-  const deviceRecord = await validateDeviceToken(token);
-  if (!deviceRecord) return [];
-
-  // Device token contacts are stored as JSON
-  return (deviceRecord.contacts ?? [])
-    .filter(
-      (c) => c.telegramChatId || c.whatsappNumber
-    )
-    .map((c, i) => ({
-      id: `device-${i}`,
-      name: c.name,
-      telegramChatId: c.telegramChatId,
-      whatsappNumber: c.whatsappNumber,
-    }));
-}
-
-async function getContactsForUser(
-  userId: string
-): Promise<ContactForSOS[]> {
-  const result = await adminDb.query({
-    emergencyContacts: {
-      $: { where: { "owner.id": userId, isActive: true } },
-    },
-  });
-
-  return (result.emergencyContacts ?? [])
-    .filter(
-      (c) =>
-        c.telegramChatId || c.whatsappNumber
-    )
-    .map((c) => ({
-      id: c.id,
-      name: c.name,
-      telegramChatId: c.telegramChatId ?? undefined,
-      whatsappNumber: c.whatsappNumber ?? undefined,
-    }));
-}
-
 export async function POST(request: NextRequest) {
   try {
-    const deviceToken = getDeviceTokenFromHeader(
-      request.headers.get("x-device-token")
-    );
+    // Get authenticated user ID
+    const userId = request.headers.get("x-instant-user-id");
 
-    if (!deviceToken) {
+    if (!userId) {
       return NextResponse.json(
-        {
-          error: {
-            code: "INVALID_TOKEN",
-            message: "Valid device token is required.",
-          },
-        },
+        { error: "User not authenticated" },
         { status: 401 }
       );
     }
 
-    if (!checkSOSRateLimit(deviceToken)) {
+    // Check rate limit
+    if (!checkSOSRateLimit(userId)) {
       return NextResponse.json(
-        {
-          error: {
-            code: "RATE_LIMIT_EXCEEDED",
-            message: "Too many SOS requests. Please wait.",
-          },
-        },
+        { error: "Too many SOS requests. Please wait." },
         { status: 429 }
       );
     }
@@ -139,95 +75,80 @@ export async function POST(request: NextRequest) {
         location.lng > 180
       ) {
         return NextResponse.json(
-          {
-            error: {
-              code: "INVALID_LOCATION",
-              message: "Invalid location coordinates.",
-            },
-          },
+          { error: "Invalid location coordinates" },
           { status: 400 }
         );
       }
     }
 
-    // Get contacts — try device token first, then authenticated user
-    let contacts = await getContactsForToken(deviceToken);
+    // Get user profile for display name
+    const profileResult = await adminDb.query({
+      profiles: {
+        $: { where: { "owner.id": userId } },
+      },
+    });
 
-    if (contacts.length === 0) {
-      // Try auth-based contacts if user is authenticated
-      const authToken = request.headers.get("authorization")?.replace("Bearer ", "");
-      if (authToken) {
-        try {
-          const user = await adminDb.auth.verifyToken(authToken);
-          if (user?.id) {
-            contacts = await getContactsForUser(user.id);
-          }
-        } catch {
-          // Auth verification failed, continue with empty contacts
-        }
-      }
-    }
+    const profile = profileResult.profiles[0];
+    const userName =
+      profile?.displayName ||
+      profile?.telegramFirstName ||
+      (language === "uk" ? "Користувач" : "User");
+
+    // Get user's active contacts
+    const contactsResult = await adminDb.query({
+      emergencyContacts: {
+        $: {
+          where: {
+            "owner.id": userId,
+            isActive: true,
+          },
+        },
+      },
+    });
+
+    const contacts = contactsResult.emergencyContacts || [];
 
     if (contacts.length === 0) {
       return NextResponse.json(
         {
-          error: {
-            code: "NO_CONTACTS",
-            message:
-              language === "uk"
-                ? "Немає налаштованих контактів. Додайте контакти в налаштуваннях."
-                : "No contacts configured. Add contacts in settings.",
-          },
+          error:
+            language === "uk"
+              ? "Немає налаштованих контактів. Додайте контакти в налаштуваннях."
+              : "No contacts configured. Add contacts in settings.",
         },
         { status: 400 }
       );
     }
 
-    // Build SOS message (userName from body or default)
+    // Build SOS message
     const message = formatSOSMessage({
-      userName: language === "uk" ? "Користувач" : "User",
+      userName,
       language,
       location,
       timestamp: new Date(),
     });
 
-    // Send to all contacts in parallel
+    // Send to all contacts via Telegram
     const results = await Promise.all(
-      contacts.flatMap((contact) => {
-        const sends: Promise<{
-          contactId: string;
-          channel: string;
-          status: "sent" | "failed";
-          error?: string;
-        }>[] = [];
-
-        if (contact.telegramChatId) {
-          sends.push(
-            sendTelegramMessage(contact.telegramChatId, message).then(
-              (r) => ({
-                contactId: contact.id,
-                channel: "telegram",
-                status: r.success ? ("sent" as const) : ("failed" as const),
-                error: r.error,
-              })
-            )
+      contacts.map(async (contact) => {
+        try {
+          const result = await sendTelegramMessage(
+            contact.telegramChatId,
+            message
           );
-        }
 
-        if (contact.whatsappNumber) {
-          sends.push(
-            sendWhatsAppMessage(contact.whatsappNumber, message).then(
-              (r) => ({
-                contactId: contact.id,
-                channel: "whatsapp",
-                status: r.success ? ("sent" as const) : ("failed" as const),
-                error: r.error,
-              })
-            )
-          );
+          return {
+            contactId: contact.id,
+            status: result.success ? ("sent" as const) : ("failed" as const),
+            error: result.error,
+          };
+        } catch (error) {
+          return {
+            contactId: contact.id,
+            status: "failed" as const,
+            error: error instanceof Error ? error.message : "Unknown error",
+          };
         }
-
-        return sends;
       })
     );
 
@@ -236,12 +157,7 @@ export async function POST(request: NextRequest) {
     console.error("SOS API error:", error);
 
     return NextResponse.json(
-      {
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Failed to send SOS. Please try again.",
-        },
-      },
+      { error: "Failed to send SOS. Please try again." },
       { status: 500 }
     );
   }

@@ -28,18 +28,18 @@ export async function POST(request: NextRequest) {
     const chatId = message.chat.id.toString();
     const text = message.text.trim();
 
-    // Handle /start {link_token} command
+    // Handle /start {inviteToken} command
     if (text.startsWith("/start ")) {
-      const linkToken = text.replace("/start ", "").trim();
+      const inviteToken = text.replace("/start ", "").trim();
 
-      if (!linkToken) {
+      if (!inviteToken) {
         return NextResponse.json({ ok: true });
       }
 
-      // Find contact by link token
+      // Find contact by invite token
       const result = await adminDb.query({
         emergencyContacts: {
-          $: { where: { telegramLinkToken: linkToken } },
+          $: { where: { inviteToken } },
         },
       });
 
@@ -64,32 +64,76 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
-      // Save telegram chat ID and invalidate link token to prevent reuse
-      await adminDb.transact(
+      // Check if already accepted
+      if (contact.acceptedAt) {
+        const botToken = process.env.TELEGRAM_BOT_TOKEN;
+        if (botToken) {
+          await fetch(
+            `https://api.telegram.org/bot${botToken}/sendMessage`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text: "Це запрошення вже використано. / This invite has already been used.",
+              }),
+            }
+          );
+        }
+        return NextResponse.json({ ok: true });
+      }
+
+      // Get chat info from Telegram API
+      const botToken = process.env.TELEGRAM_BOT_TOKEN;
+      if (!botToken) {
+        return NextResponse.json({ ok: true });
+      }
+
+      const chatInfoResponse = await fetch(
+        `https://api.telegram.org/bot${botToken}/getChat?chat_id=${chatId}`
+      );
+      const chatInfoData = await chatInfoResponse.json();
+
+      if (!chatInfoData.ok) {
+        console.error("Failed to get chat info:", chatInfoData);
+        return NextResponse.json({ ok: true });
+      }
+
+      const chatInfo = chatInfoData.result;
+      const chatType = chatInfo.type; // 'private', 'group', 'supergroup'
+      const chatTitle = chatInfo.title || chatInfo.first_name || "Unknown";
+      const chatPhoto = chatInfo.photo?.big_file_id;
+
+      // Update contact with chat details
+      await adminDb.transact([
         adminDb.tx.emergencyContacts[contact.id].update({
           telegramChatId: chatId,
-          telegramLinkToken: "",
+          telegramChatType: chatType,
+          telegramChatTitle: chatTitle,
+          telegramChatPhoto: chatPhoto,
+          displayName: chatTitle,
+          acceptedAt: new Date(),
           isActive: true,
-          updatedAt: Date.now(),
-        })
-      );
+          updatedAt: new Date(),
+        }),
+      ]);
 
-      // Send confirmation to contact
-      const botToken = process.env.TELEGRAM_BOT_TOKEN;
-      if (botToken) {
-        const contactName = message.from?.first_name ?? "Friend";
-        await fetch(
-          `https://api.telegram.org/bot${botToken}/sendMessage`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              chat_id: chatId,
-              text: `✅ ${contactName}, вас підключено як екстрений контакт для ${contact.name} у застосунку PanicAttack Helper.\n\n✅ ${contactName}, you are now connected as an emergency contact for ${contact.name} in PanicAttack Helper app.`,
-            }),
-          }
-        );
+      // Send confirmation based on chat type
+      let confirmText = "";
+      if (chatType === "private") {
+        confirmText = `✅ Вас підключено як екстрений контакт у PanicAttack Helper.\n\n✅ You are now connected as an emergency contact in PanicAttack Helper.`;
+      } else {
+        confirmText = `✅ Цю групу підключено як екстрений контакт у PanicAttack Helper.\n\n✅ This group is now registered as an emergency contact in PanicAttack Helper.`;
       }
+
+      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: confirmText,
+        }),
+      });
 
       return NextResponse.json({ ok: true });
     }
