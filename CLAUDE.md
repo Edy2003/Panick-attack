@@ -4,25 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PanicAttack Helper — free PWA for helping people with anxiety disorder during panic attacks. Voice AI assistant (CBT/grounding protocols), SOS button for alerting emergency contacts via Telegram/WhatsApp, breathing exercises, anxiety journal.
+PanicAttack Helper — free PWA for helping people with anxiety disorder during panic attacks. Voice AI assistant (CBT/grounding protocols), SOS button for alerting emergency contacts via Telegram, breathing exercises, anxiety journal.
 
 **PRD**: `docs/prd.md` | **Architecture**: `docs/architect.md` | **Tasks**: `docs/tasks.md` | **SOS Redesign**: `docs/sos-redesign.md`
 
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router) + TypeScript strict mode
-- **Styling**: Tailwind CSS 4 (CSS-first config, no tailwind.config file — uses `@theme inline` in `globals.css`) + shadcn/ui (new-york style)
+- **Styling**: Tailwind CSS 4 (CSS-first config via `@theme inline` in `globals.css`) + shadcn/ui (new-york style)
 - **Animations**: Framer Motion
-- **State**: React local state + InstantDB real-time subscriptions. Zustand is installed but not yet used
+- **State**: React local state + InstantDB real-time subscriptions
 - **i18n**: next-intl — Ukrainian (primary, `uk`), English (secondary, `en`). Translation files: `messages/uk.json`, `messages/en.json`
 - **Database**: InstantDB (real-time, offline-first, built-in auth & permissions). Schema: `instant.schema.ts`, Permissions: `instant.perms.ts`
-- **Auth**: InstantDB built-in email magic code authentication. User profile accessible via Header icon.
+- **Auth**: InstantDB email magic code authentication. Cookie-based API authentication via `getUnverifiedUserFromInstantCookie`
 - **AI**: Google Gemini 2.5 Flash (gemini-2.5-flash, FREE tier — 1500 req/day) via `/api/chat` route
 - **Voice**: Web Speech API (SpeechRecognition for STT, SpeechSynthesis for TTS)
-- **SOS Messaging**: Telegram Bot API with invite-based contact system (Telegram Login Widget + `/start` token flow)
-- **PWA**: Serwist (not yet configured — TASK-014)
+- **SOS Messaging**: Telegram Bot API with invite-based contact system
+- **PWA**: Serwist (not yet configured)
 - **Hosting**: Vercel (Free Hobby Plan)
-- **Testing**: Vitest + React Testing Library + Playwright (deps installed, no configs or tests written yet)
 
 ## Commands
 
@@ -30,157 +29,193 @@ PanicAttack Helper — free PWA for helping people with anxiety disorder during 
 npm run dev              # Dev server (Turbopack)
 npm run build            # Production build
 npm run lint             # ESLint
-npm run test             # Vitest unit tests (needs vitest.config.ts setup)
-npm run test:e2e         # Playwright E2E (needs playwright.config.ts setup)
-npx vitest run src/path/to/file.test.ts   # Run a single test file
+npx instant-cli push schema --yes    # Push schema changes
+npx instant-cli push perms --yes     # Push permission changes
 ```
 
 ## Code Architecture
 
 ### Routing & Layouts
-All pages are locale-prefixed: `src/app/[locale]/`. The root layout (`src/app/layout.tsx`) sets Inter font (Latin + Cyrillic) and PWA metadata. The locale layout (`src/app/[locale]/layout.tsx`) wraps children in `NextIntlClientProvider` + `AppShell`. Middleware (`src/middleware.ts`) handles locale detection via next-intl, excluding `/api`, `/_next`, and static files.
+All pages are locale-prefixed: `src/app/[locale]/`. Middleware (`src/middleware.ts`) handles locale detection via next-intl.
 
 **Pages**: home, auth, chat, exercises (breathing, grounding), journal, library (with `[slug]` dynamic), settings/contacts
 
 ### AppShell Layout
-`AppShell` renders: `Header` (sticky top, glassmorphism, with language toggle + profile icon) → `<main>` (with `pb-24` for bottom nav clearance) → `SOSButton` (fixed bottom-right, always visible) → `BottomNav` (fixed bottom, 5 tabs: Home, Chat, Exercises, Journal, Library)
+`Header` (sticky top, glassmorphism, language toggle + profile icon) → `<main>` (pb-24) → `SOSButton` (fixed bottom-right) → `BottomNav` (fixed bottom, 5 tabs)
 
 ### Key Directories
 ```
 src/
-├── app/api/          # Route handlers: chat, sos, contacts, contacts/[id], telegram/webhook
-├── components/       # Feature-grouped: auth, chat, exercises, journal, layout, library, sos, ui (shadcn)
-├── hooks/            # useAuth, useChat, useSOS (requires auth), useBreathingExercise, useGroundingExercise, useJournal (localStorage), useJournalDB (InstantDB), useSpeechRecognition, useSpeechSynthesis
+├── app/api/          # chat, sos, contacts/invite, auth/telegram/connect, telegram/webhook
+├── components/       # Feature-grouped: auth, chat, exercises, journal, layout, library, sos, ui
+├── hooks/            # useAuth, useChat, useSOS, useBreathingExercise, useGroundingExercise, useJournalDB, useSpeech*
 ├── lib/
 │   ├── ai/           # chat-service, safety-filter, system-prompt
-│   ├── auth/         # telegram-auth (Telegram Login Widget hash verification)
+│   ├── auth/         # get-auth-user (cookie-based API auth), telegram-auth (hash verification)
 │   ├── content/      # articles (6 articles × 2 languages, hardcoded)
-│   ├── exercises/    # breathing-patterns (4 techniques with phase timings + colors)
-│   ├── messaging/    # telegram, whatsapp, message-template
+│   ├── exercises/    # breathing-patterns (4 techniques)
+│   ├── messaging/    # telegram, message-template
 │   └── storage/      # journal (localStorage CRUD + CSV/JSON export)
-├── i18n/             # routing.ts (locales config), request.ts (message loader)
-└── types/            # speech.d.ts (Web Speech API types)
+└── i18n/             # routing.ts, request.ts
 ```
 
 ### Database (InstantDB)
-- **Client**: `src/lib/db.ts` — `init()` from `@instantdb/react` with schema
-- **Admin** (server-side): `src/lib/db-admin.ts` — `init()` from `@instantdb/admin`
+- **Client**: `src/lib/db.ts` — `init()` from `@instantdb/react`
+- **Admin**: `src/lib/db-admin.ts` — `init()` from `@instantdb/admin`
 - **Entities**:
   - `$users` — InstantDB managed users
-  - `profiles` — user profile with Telegram OAuth fields (telegramUserId, telegramUsername, telegramFirstName, telegramPhotoUrl, telegramAuthDate)
-  - `emergencyContacts` — invite-based contacts (displayName, telegramChatId, telegramChatType, telegramChatTitle, telegramChatPhoto, inviteToken, invitedAt, acceptedAt, isActive)
-  - `journalEntries` — anxiety journal entries
+  - `profiles` — displayName, language, isGuest, Telegram OAuth fields (telegramUserId, telegramUsername, telegramFirstName, telegramPhotoUrl, telegramAuthDate)
+  - `emergencyContacts` — displayName, telegramChatId, telegramChatType, telegramChatTitle, telegramChatPhoto, inviteToken, invitedAt, acceptedAt, isActive
+  - `journalEntries` — anxietyLevel, triggers, symptoms, copingTechniques, durationMinutes (optional), notes (optional), createdAt
 - **Links**: profileOwner (1:1), contactOwner (M:1), journalOwner (M:1)
-- **Permissions**: CEL-based, `isOwner` pattern binding `auth.id in data.ref('owner.id')`
-- Push schema/perms: `npx instant-cli push schema --yes` / `npx instant-cli push perms --yes`
+- **Permissions**: CEL-based, `isOwner` pattern: `auth.id in data.ref('owner.id')`
+
+### Authentication
+
+**Client-side**: Email magic code via `db.useAuth()` hook
+- `sendMagicCode(email)` → `signInWithMagicCode(email, code)`
+- Profile icon in Header links to `/auth` page
+
+**Server-side (API routes)**: Cookie-based authentication
+```typescript
+import { getAuthenticatedUser } from "@/lib/auth/get-auth-user";
+
+export async function POST(request: NextRequest) {
+  const user = await getAuthenticatedUser(request); // Gets user from secure cookies
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = user.id; // Now you have verified user ID
+  // ... rest of logic
+}
+```
+
+**CRITICAL**: NEVER accept `X-Instant-User-Id` or similar headers from client. Always use `getAuthenticatedUser()` for API route authentication.
+
+**Client fetch calls**: Always include `credentials: "include"` to send cookies:
+```typescript
+fetch("/api/endpoint", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  credentials: "include", // Required for cookie-based auth
+  body: JSON.stringify(data),
+});
+```
 
 ### SOS System Architecture
-**Design Document**: See `docs/sos-redesign.md` for full implementation plan.
+**Full design**: See `docs/sos-redesign.md`
 
 **Flow**:
 1. User authenticates via email magic code
-2. User optionally connects Telegram account via Telegram Login Widget (Phase 2)
-3. User generates unique invite link in app → shares to Telegram chats (private or groups)
-4. Recipients click invite link → bot captures chat_id and metadata via `/start` command
-5. When SOS triggered, bot sends message to all linked chat_ids
+2. User generates unique invite link → shares to Telegram chats (private or groups)
+3. Recipients click invite → bot captures chat_id + metadata via `/start <token>` command
+4. SOS triggered → bot sends to all linked chat_ids
 
-**Key Features**:
-- Invite-based contact system (no chat list selection due to Telegram API privacy restrictions)
-- Supports both private chats and groups
-- Automatic chat metadata capture (name, type, photo)
-- QR code generation for easy sharing
-- Requires user authentication (no anonymous device tokens)
-- Max 10 contacts per user
+**Features**: Invite-based (no chat list selection), supports private + groups, QR codes, max 10 contacts/user
 
-### Authentication (InstantDB)
-Simple email magic code authentication via `useAuth` hook:
-- **Email Magic Code** — `sendMagicCode(email)` → `signInWithMagicCode(email, code)`
-- **Access**: Profile icon in Header (top-right) links to `/auth` page
-- **UI Flow**: Two-step form (email input → code verification)
-- **Session**: InstantDB manages auth state via `db.useAuth()`
+### API Routes
 
-### API Route Patterns
 All routes use in-memory rate limiting (bounded Map, 10k entries max):
-- `/api/chat`: 60 req/hr per IP, 30 messages/session, 500 char limit. Pre-send + post-receive safety filtering
-- `/api/sos`: 5 req/10min per user. Auth via InstantDB token. Queries user's emergencyContacts, sends to all active telegramChatIds
-- `/api/contacts/invite`: POST generates unique invite token, creates pending contact, returns Telegram deep link (`t.me/bot?start=token`)
-- `/api/telegram/webhook`: Verifies secret with timing-safe comparison. On `/start <token>`, finds contact by inviteToken, captures chat metadata, marks as accepted
-- `/api/auth/telegram/callback`: POST verifies Telegram Login Widget hash (HMAC-SHA256), updates user profile with Telegram data
+
+- **`/api/chat`**: 60 req/hr per IP, 30 msg/session, 500 char limit. Safety filtering (pre-send + post-receive)
+- **`/api/sos`**: 5 req/10min per user. Cookie auth. Queries user's emergencyContacts, sends to all active telegramChatIds
+- **`/api/contacts/invite`**: POST generates unique inviteToken, creates pending contact, returns deep link (`t.me/bot?start=token`)
+- **`/api/auth/telegram/connect`**: POST verifies Telegram Login Widget hash (HMAC-SHA256), updates user profile with Telegram data
+- **`/api/telegram/webhook`**: Verifies secret (timing-safe comparison). On `/start <token>`, finds contact by inviteToken, captures chat metadata, marks accepted
 
 ### Safety System
-`src/lib/ai/safety-filter.ts` provides two-pass filtering:
-1. **Pre-send** (`checkUserMessage`): crisis keyword detection (uk + en) → returns immediate crisis hotline response (7333 Лайфлайн Україна)
-2. **Post-receive** (`checkAIResponse`): regex-based diagnosis/prescription detection → blocks with safe fallback
+`src/lib/ai/safety-filter.ts`:
+1. **Pre-send** (`checkUserMessage`): Crisis keyword detection (uk + en) → immediate crisis hotline (7333 Лайфлайн Україна)
+2. **Post-receive** (`checkAIResponse`): Regex-based diagnosis/prescription detection → blocks with fallback
 
 ### i18n Pattern
-Namespaces: `common`, `home`, `nav`, `sos`, `chat`, `settings`, `auth`, `exercises`, `breathing`, `journal`, `grounding`, `library`, `safety`. Usage: `const t = useTranslations("namespace"); t("key")`
+Namespaces: `common`, `home`, `nav`, `sos`, `chat`, `settings`, `auth`, `exercises`, `breathing`, `journal`, `grounding`, `library`, `safety`
+
+Usage: `const t = useTranslations("namespace"); t("key")`
 
 ### localStorage Keys
-- `panic-helper:journal` — journal entries (array of JournalEntry, migrated to InstantDB on first auth)
+- `panic-helper:journal` — journal entries (migrated to InstantDB on first auth)
 - `panic-helper:bookmarks` — bookmarked article slugs
 
 ## Coding Conventions
 
 - `@/` path alias → `src/`
-- All user-facing strings via next-intl `useTranslations()` — never hardcode UI text
+- All user-facing strings via next-intl `useTranslations()` — NEVER hardcode UI text
 - Tailwind utility classes only, no inline styles. Use `cn()` from `@/lib/utils` for conditional classes
-- Shadcn components in `src/components/ui/` — add new ones via `npx shadcn@latest add <component>`
+- Shadcn components in `src/components/ui/` — add via `npx shadcn@latest add <component>`
 - API routes as Next.js Route Handlers (`src/app/api/`)
-- Accessibility: keyboard navigable, ARIA labels, `prefers-reduced-motion` support, 48×48px minimum tap targets
-- Next.js 16 async params pattern: `const { locale } = await params` in layouts/pages
+- Accessibility: keyboard navigable, ARIA labels, `prefers-reduced-motion`, 48×48px tap targets
+- Next.js 16 async params: `const { locale } = await params` in layouts/pages
 
 ## Design System
 
-### Colors (defined as CSS custom properties in `src/app/globals.css`)
+### Colors (CSS custom properties in `src/app/globals.css`)
 ```
---calm-blue:  #7CB9E8  — primary actions, breathing inhale
---lavender:   #B4A7D6  — breathing hold
+--calm-blue:   #7CB9E8  — primary, breathing inhale
+--lavender:    #B4A7D6  — breathing hold
 --soft-green:  #A8D5BA  — breathing exhale
 --peach:       #F4A896  — warm accent
 --sos-red:     #DC2626  — SOS button only
 ```
-Light background: `#FFF8F0` (creamy warm). Dark mode: `#1A1B2E` (deep navy) with glassmorphism cards (`backdrop-blur`).
+Light: `#FFF8F0` (creamy warm) | Dark: `#1A1B2E` (deep navy) + glassmorphism
 
 ### Typography
-- Font: Inter (Latin + Cyrillic subsets)
-- Body minimum 16px; during panic state minimum 24px
-- Mobile-first responsive; SOS button always fixed-position visible
+- Font: Inter (Latin + Cyrillic)
+- Body: 16px minimum; panic state: 24px minimum
+- Mobile-first responsive
 
 ## Critical Safety Rules
 
 1. **AI must NEVER diagnose or prescribe medication**
 2. **Suicide/self-harm mentions → immediate crisis hotline: 7333 (Лайфлайн Україна)**
 3. **AI tone: warm, calm, validating — never dismissive**
-4. **SOS requires 3s countdown confirmation to prevent accidental triggers**
-5. **No PHI/PII stored without explicit user consent**
+4. **SOS requires 3s countdown confirmation**
+5. **No PHI/PII stored without explicit consent**
 
 ## Phase Completion Workflow
 
-**Before starting a new phase**: create a dedicated branch from `main` named `phase-N/short-description` (e.g. `phase-3/additional-features`).
+Before starting a phase: create branch `phase-N/short-description`
 
-After completing each phase (group of related TASKs), execute these steps **in order**:
-
-1. **Update CLAUDE.md** — reflect new/changed architecture, commands, conventions, or localStorage keys introduced in this phase
-2. **Run Bug Hunter** — follow `agents/bug-review.md` principles: full scan of all files changed in this phase. Classify findings S1–S4, fix all S1/S2 before proceeding
-3. **Run Code Reviewer** — follow `agents/code-reviewer.md` principles: review via `git diff main...HEAD`, fix all Critical issues, address Warnings
-4. **Merge to main** — after both reviews pass clean, merge the feature branch into `main`
+After completing phase:
+1. **Update CLAUDE.md** — new architecture, commands, conventions
+2. **Run Bug Hunter** — `agents/bug-review.md` principles, fix S1/S2
+3. **Run Code Reviewer** — `agents/code-reviewer.md` principles, fix Critical issues
+4. **Merge to main** — after reviews pass
 
 ## Agent Roles
 
-Agent definition files in `agents/`. Read the full file for detailed principles:
-- `full-stack.md` — system architecture, API contracts, DB schemas, security
-- `designer.md` — UI design, components, accessibility, calming palette
-- `prt-agent.md` — PRDs, task decomposition, sprint planning
-- `code-reviewer.md` — code review checklist (Critical → Warnings → Suggestions)
-- `bug-review.md` — bug hunting, severity S1–S4, full codebase scan
-- `ml-engineer.md` — future ML features (panic detection, sentiment analysis)
+See `agents/` directory:
+- `full-stack.md` — architecture, API contracts, security
+- `designer.md` — UI/UX, accessibility, calming palette
+- `prt-agent.md` — PRDs, task decomposition
+- `code-reviewer.md` — code review checklist
+- `bug-review.md` — bug hunting, severity classification
+- `ml-engineer.md` — future ML features
 
 ## Environment Variables
 
+```bash
+NEXT_PUBLIC_INSTANT_APP_ID=          # InstantDB app ID
+INSTANT_ADMIN_TOKEN=                 # InstantDB admin token (server-side only)
+GEMINI_API_KEY=                      # Get from https://aistudio.google.com/apikey
+TELEGRAM_BOT_TOKEN=                  # Telegram Bot API token
+TELEGRAM_WEBHOOK_SECRET=             # Secret for webhook verification
+NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=   # Bot username without @ (for Login Widget + invite links)
 ```
-NEXT_PUBLIC_INSTANT_APP_ID, INSTANT_ADMIN_TOKEN
-GEMINI_API_KEY                          # Get from https://aistudio.google.com/apikey (FREE, 1500 req/day)
-TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET
-NEXT_PUBLIC_TELEGRAM_BOT_USERNAME       # Telegram bot username without @ (for Login Widget and invite links)
-TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM
-```
+
+## InstantDB Resources
+
+For InstantDB usage, query patterns, permissions, and best practices, see:
+- **Documentation**: https://instantdb.com/docs
+- **Common mistakes**: https://instantdb.com/docs/common-mistakes
+- **Schema modeling**: https://instantdb.com/docs/modeling-data
+- **Queries (InstaQL)**: https://instantdb.com/docs/instaql
+- **Transactions (InstaML)**: https://instantdb.com/docs/instaml
+- **Permissions**: https://instantdb.com/docs/permissions
+- **Backend/Admin SDK**: https://instantdb.com/docs/backend
+- **CLI**: https://instantdb.com/docs/cli
+
+**Key reminders**:
+- Pass `schema` when calling `init()` for type safety
+- Use `id()` from `@instantdb/react` or `@instantdb/admin` to generate entity IDs
+- Index any field you filter/order by in schema
+- `data.ref()` always returns a list and must end with an attribute
+- Follow rules of hooks — no conditional `db.useQuery()` calls
