@@ -12,15 +12,21 @@ import { getUnverifiedUserFromInstantCookie } from "@instantdb/react/nextjs";
  */
 export async function getAuthenticatedUser() {
   try {
-    const user = await getUnverifiedUserFromInstantCookie(
-      process.env.NEXT_PUBLIC_INSTANT_APP_ID!
-    );
+    const appId = process.env.NEXT_PUBLIC_INSTANT_APP_ID;
+    console.log("[AUTH DEBUG] App ID:", appId ? "present" : "MISSING");
+
+    if (!appId) {
+      console.error("[AUTH ERROR] NEXT_PUBLIC_INSTANT_APP_ID is not set!");
+      return null;
+    }
+
+    const user = await getUnverifiedUserFromInstantCookie(appId);
 
     console.log("[AUTH DEBUG] User from cookies:", user ? `user ${user.id}` : "null");
 
     return user;
   } catch (error) {
-    console.error("Failed to get authenticated user:", error);
+    console.error("[AUTH ERROR] Failed to get authenticated user:", error);
     return null;
   }
 }
