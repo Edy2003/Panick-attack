@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get authenticated user from secure cookies
-    const user = await getAuthenticatedUser(request);
+    const user = await getAuthenticatedUser();
 
     if (!user) {
       return NextResponse.json(

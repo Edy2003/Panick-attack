@@ -6,7 +6,7 @@ import { getAuthenticatedUser } from "@/lib/auth/get-auth-user";
 export async function POST(request: NextRequest) {
   try {
     // Get authenticated user from secure cookies
-    const user = await getAuthenticatedUser(request);
+    const user = await getAuthenticatedUser();
 
     if (!user) {
       return NextResponse.json(
