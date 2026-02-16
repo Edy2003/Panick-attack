@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { usePathname, useRouter } from "next/navigation";
 import { Send, Loader2, Mic, Keyboard, Languages } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
@@ -14,26 +15,20 @@ interface VoiceChatProps {
 }
 
 type InputMode = "voice" | "text";
-type AILanguage = "uk" | "en";
-
-const AI_LANGUAGE_KEY = "panic-helper:ai-language";
 
 export function VoiceChat({ language }: VoiceChatProps) {
   const t = useTranslations("chat");
+  const router = useRouter();
+  const pathname = usePathname();
   const [textInput, setTextInput] = useState("");
   const [inputMode, setInputMode] = useState<InputMode>("voice");
-  const [aiLanguage, setAILanguage] = useState<AILanguage>(() => {
-    if (typeof window === "undefined") return language;
-    const saved = localStorage.getItem(AI_LANGUAGE_KEY);
-    return (saved === "uk" || saved === "en") ? saved : language;
-  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastSpokenRef = useRef<string | null>(null);
 
-  const { messages, isLoading, error, sendMessage } = useChat({ language: aiLanguage });
+  const { messages, isLoading, error, sendMessage } = useChat({ language });
 
   const { speak, stop: stopSpeaking, isSpeaking, isSupported: ttsSupported } =
-    useSpeechSynthesis({ language: aiLanguage });
+    useSpeechSynthesis({ language });
 
   const handleResult = useCallback(
     (transcript: string) => {
@@ -50,17 +45,15 @@ export function VoiceChat({ language }: VoiceChatProps) {
     startListening,
     stopListening,
   } = useSpeechRecognition({
-    language: aiLanguage,
+    language,
     onResult: handleResult,
   });
 
-  const toggleAILanguage = useCallback(() => {
-    const newLang: AILanguage = aiLanguage === "uk" ? "en" : "uk";
-    setAILanguage(newLang);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(AI_LANGUAGE_KEY, newLang);
-    }
-  }, [aiLanguage]);
+  const toggleLanguage = useCallback(() => {
+    const newLocale = language === "uk" ? "en" : "uk";
+    const newPath = pathname.replace(`/${language}`, `/${newLocale}`);
+    router.push(newPath);
+  }, [language, pathname, router]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -103,9 +96,9 @@ export function VoiceChat({ language }: VoiceChatProps) {
   };
 
   return (
-    <div className="flex h-[calc(100dvh-8rem)] flex-col">
+    <div className="flex h-[calc(100dvh-8rem)] flex-col px-4">
       {/* Mode Toggle & Language Switcher */}
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-4 mt-2 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setInputMode("voice")}
@@ -135,13 +128,13 @@ export function VoiceChat({ language }: VoiceChatProps) {
 
         {/* Language Toggle */}
         <button
-          onClick={toggleAILanguage}
+          onClick={toggleLanguage}
           className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-muted/80"
           aria-label={t("switchLanguage")}
           title={t("switchLanguage")}
         >
           <Languages className="h-3.5 w-3.5" />
-          <span className="uppercase">{aiLanguage}</span>
+          <span className="uppercase">{language}</span>
         </button>
       </div>
 
