@@ -49,9 +49,9 @@ export function AnxietyChart({ entries, days = 14 }: AnxietyChartProps) {
     <Card className="p-4">
       <h3 className="mb-3 text-sm font-semibold">{t("chartTitle")}</h3>
 
-      <div className="flex items-end gap-1.5" style={{ height: 120 }}>
+      <div className="flex items-end gap-1.5">
         {visibleData.map((d, i) => {
-          const heightPct = (d.avg / 10) * 100;
+          const barHeight = Math.round((d.avg / 10) * 100);
           const color =
             d.avg <= 3
               ? "bg-soft-green"
@@ -71,7 +71,7 @@ export function AnxietyChart({ entries, days = 14 }: AnxietyChartProps) {
               </span>
               <div
                 className={`w-full min-w-[8px] rounded-t ${color}`}
-                style={{ height: `${heightPct}%` }}
+                style={{ height: `${barHeight}px` }}
                 aria-label={`${d.date}: ${d.avg}`}
               />
               <span className="text-[9px] text-muted-foreground">

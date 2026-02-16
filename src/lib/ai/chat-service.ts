@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getSystemPrompt } from "./system-prompt";
 import { checkUserMessage, checkAIResponse, getCrisisResponse } from "./safety-filter";
 
@@ -43,25 +43,28 @@ export async function chat(request: ChatRequest): Promise<ChatResponse> {
     content: msg.content.slice(0, MAX_INPUT_TOKENS * 4),
   }));
 
-  const client = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash-exp",
+    systemInstruction: getSystemPrompt(language),
   });
 
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: MAX_OUTPUT_TOKENS,
-    system: getSystemPrompt(language),
-    messages: [
-      ...recentHistory.map((msg) => ({
-        role: msg.role as "user" | "assistant",
-        content: msg.content,
-      })),
-      { role: "user", content: truncatedMessage },
-    ],
+  // Convert history to Gemini format
+  const geminiHistory = recentHistory.map((msg) => ({
+    role: msg.role === "assistant" ? "model" : "user",
+    parts: [{ text: msg.content }],
+  }));
+
+  const chat = model.startChat({
+    history: geminiHistory,
+    generationConfig: {
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
+      temperature: 0.7,
+    },
   });
 
-  const aiReply =
-    response.content[0].type === "text" ? response.content[0].text : "";
+  const result = await chat.sendMessage(truncatedMessage);
+  const aiReply = result.response.text();
 
   // Post-receive safety filter
   const { hasDiagnosis } = checkAIResponse(aiReply);
