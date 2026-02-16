@@ -50,7 +50,7 @@ All pages are locale-prefixed: `src/app/[locale]/`. The root layout (`src/app/la
 src/
 ├── app/api/          # Route handlers: chat, sos, contacts, contacts/[id], telegram/webhook
 ├── components/       # Feature-grouped: auth, chat, exercises, journal, layout, library, sos, ui (shadcn)
-├── hooks/            # useAuth, useChat, useSOS, useBreathingExercise, useGroundingExercise, useJournal, useSpeechRecognition, useSpeechSynthesis
+├── hooks/            # useAuth, useChat, useSOS, useBreathingExercise, useGroundingExercise, useJournal (localStorage), useJournalDB (InstantDB), useSpeechRecognition, useSpeechSynthesis
 ├── lib/
 │   ├── ai/           # chat-service, safety-filter, system-prompt
 │   ├── auth/         # device-token (anonymous SOS auth via localStorage UUID)

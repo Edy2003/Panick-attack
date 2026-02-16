@@ -1,22 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { Plus, Download, Trash2 } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
+import { Plus, Download, Trash2, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { QuickLogForm } from "@/components/journal/QuickLogForm";
 import { AnxietyChart } from "@/components/journal/AnxietyChart";
-import { useJournal } from "@/hooks/useJournal";
+import { useJournalDB } from "@/hooks/useJournalDB";
+import { useAuth } from "@/hooks/useAuth";
+import Link from "next/link";
 
 export default function JournalPage() {
   const t = useTranslations("journal");
-  const { entries, loading, add, remove, exportData } = useJournal();
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
+  const { isAuthenticated } = useAuth();
+  const { entries, loading, add, remove, exportData } = useJournalDB();
   const [showForm, setShowForm] = useState(false);
 
-  const handleSubmit = (entry: Parameters<typeof add>[0]) => {
-    add(entry);
-    setShowForm(false);
+  const handleSubmit = async (entry: Parameters<typeof add>[0]) => {
+    const success = await add(entry);
+    if (success) {
+      setShowForm(false);
+    }
   };
 
   const formatDate = (ts: number) => {
@@ -40,6 +47,29 @@ export default function JournalPage() {
     return (
       <div className="flex items-center justify-center p-8 text-muted-foreground">
         {t("loading")}
+      </div>
+    );
+  }
+
+  // Show auth prompt for non-authenticated users
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-6 p-8 text-center">
+        <div className="rounded-full bg-primary/10 p-4">
+          <LogIn className="h-8 w-8 text-primary" />
+        </div>
+        <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold">{t("authRequired")}</h2>
+          <p className="text-sm text-muted-foreground max-w-sm">
+            {t("authRequiredDesc")}
+          </p>
+        </div>
+        <Link href={`/${locale}/auth`}>
+          <Button>
+            <LogIn className="mr-2 h-4 w-4" />
+            {tCommon("signIn")}
+          </Button>
+        </Link>
       </div>
     );
   }
@@ -104,7 +134,7 @@ export default function JournalPage() {
                       <span className="text-xs text-muted-foreground">
                         {formatDate(entry.createdAt)}
                       </span>
-                      {entry.durationMinutes > 0 && (
+                      {entry.durationMinutes && entry.durationMinutes > 0 && (
                         <span className="text-xs text-muted-foreground">
                           · {entry.durationMinutes} {t("min")}
                         </span>
@@ -131,7 +161,11 @@ export default function JournalPage() {
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    onClick={() => remove(entry.id)}
+                    onClick={() => {
+                      if (window.confirm(t("confirmDelete"))) {
+                        remove(entry.id);
+                      }
+                    }}
                     aria-label={t("delete")}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
