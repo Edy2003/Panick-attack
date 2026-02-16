@@ -87,9 +87,9 @@ export function VoiceChat({ language }: VoiceChatProps) {
   };
 
   return (
-    <div className="flex h-[calc(100dvh-8rem)] flex-col">
+    <div className="flex h-[calc(100dvh-14rem)] flex-col overflow-hidden">
       {/* Mode Toggle */}
-      <div className="mb-3 flex items-center justify-center gap-2 px-4 pt-2">
+      <div className="mb-3 flex flex-shrink-0 items-center justify-center gap-2 px-4 pt-2">
         <button
           onClick={() => setInputMode("voice")}
           className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
@@ -151,7 +151,7 @@ export function VoiceChat({ language }: VoiceChatProps) {
 
       {/* Input - Voice Mode */}
       {inputMode === "voice" && sttSupported && (
-        <div className="flex flex-col items-center gap-3 border-t border-border/50 px-4 pt-4">
+        <div className="flex flex-shrink-0 flex-col items-center gap-3 border-t border-border/50 px-4 pt-4 pb-4">
           <p className="text-sm text-muted-foreground">
             {isListening
               ? t("listeningHint")
@@ -181,7 +181,7 @@ export function VoiceChat({ language }: VoiceChatProps) {
 
       {/* Input - Text Mode */}
       {inputMode === "text" && (
-        <div className="flex items-center gap-2 border-t border-border/50 px-4 pt-3">
+        <div className="flex flex-shrink-0 items-center gap-2 border-t border-border/50 px-4 pt-3 pb-4">
           <form onSubmit={handleTextSubmit} className="flex flex-1 gap-2">
             <input
               type="text"
