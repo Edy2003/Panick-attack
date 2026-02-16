@@ -9,7 +9,9 @@
     "delete": "Видалити",
     "back": "Назад",
     "close": "Закрити",
-    "switchLanguage": "Змінити мову"
+    "switchLanguage": "Змінити мову",
+    "signIn": "Увійти",
+    "profile": "Профіль"
   },
   "home": {
     "hero": "Ти в безпеці",
@@ -74,15 +76,26 @@
   "auth": {
     "title": "Вхід в акаунт",
     "subtitle": "Увійдіть щоб синхронізувати дані між пристроями",
+    "or": "або",
+    "continueWithEmail": "Продовжити з email",
+    "continueAsGuest": "Продовжити як гість",
     "emailPlaceholder": "Ваш email",
     "sendCode": "Надіслати код",
     "codeSent": "Код надіслано на {email}",
     "codePlaceholder": "Введіть код",
     "verify": "Підтвердити",
     "changeEmail": "Змінити email",
+    "back": "Назад",
     "sendError": "Не вдалося надіслати код",
     "codeError": "Невірний код",
+    "googleError": "Помилка входу через Google",
+    "guestError": "Помилка входу як гість",
     "loggedIn": "Ви увійшли",
+    "guestAccount": "Гостьовий акаунт",
+    "upgradeTitle": "Збережіть свої дані назавжди",
+    "upgradeDesc": "Створіть акаунт щоб синхронізувати дані між пристроями та не втратити їх",
+    "upgradeAccount": "Створити акаунт",
+    "upgradeHint": "Після входу всі ваші дані будуть збережені в акаунті",
     "signOut": "Вийти",
     "manageContacts": "Керувати контактами",
     "skipAuth": "Продовжити без входу"

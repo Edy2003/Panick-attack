@@ -8,6 +8,7 @@ const _schema = i.schema({
     profiles: i.entity({
       displayName: i.string().optional(),
       language: i.string(), // 'uk' | 'en'
+      isGuest: i.boolean(), // Track if user is anonymous/guest
       createdAt: i.date(),
       updatedAt: i.date(),
     }),

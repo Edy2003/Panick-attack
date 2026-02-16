@@ -9,7 +9,9 @@
     "delete": "Delete",
     "back": "Back",
     "close": "Close",
-    "switchLanguage": "Switch language"
+    "switchLanguage": "Switch language",
+    "signIn": "Sign In",
+    "profile": "Profile"
   },
   "home": {
     "hero": "You are safe",
@@ -74,15 +76,26 @@
   "auth": {
     "title": "Sign In",
     "subtitle": "Sign in to sync your data across devices",
+    "or": "or",
+    "continueWithEmail": "Continue with email",
+    "continueAsGuest": "Continue as guest",
     "emailPlaceholder": "Your email",
     "sendCode": "Send code",
     "codeSent": "Code sent to {email}",
     "codePlaceholder": "Enter code",
     "verify": "Verify",
     "changeEmail": "Change email",
+    "back": "Back",
     "sendError": "Failed to send code",
     "codeError": "Invalid code",
+    "googleError": "Google sign-in error",
+    "guestError": "Guest sign-in error",
     "loggedIn": "You are signed in",
+    "guestAccount": "Guest Account",
+    "upgradeTitle": "Save your data forever",
+    "upgradeDesc": "Create an account to sync your data across devices and never lose it",
+    "upgradeAccount": "Create Account",
+    "upgradeHint": "After signing in, all your data will be saved to your account",
     "signOut": "Sign out",
     "manageContacts": "Manage contacts",
     "skipAuth": "Continue without signing in"

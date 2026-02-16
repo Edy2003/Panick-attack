@@ -16,6 +16,7 @@ PanicAttack Helper — free PWA for helping people with anxiety disorder during 
 - **State**: React local state + InstantDB real-time subscriptions. Zustand is installed but not yet used
 - **i18n**: next-intl — Ukrainian (primary, `uk`), English (secondary, `en`). Translation files: `messages/uk.json`, `messages/en.json`
 - **Database**: InstantDB (real-time, offline-first, built-in auth & permissions). Schema: `instant.schema.ts`, Permissions: `instant.perms.ts`
+- **Auth**: InstantDB built-in email magic code authentication. User profile accessible via Header icon.
 - **AI**: Google Gemini 2.5 Flash (gemini-2.5-flash, FREE tier — 1500 req/day) via `/api/chat` route
 - **Voice**: Web Speech API (SpeechRecognition for STT, SpeechSynthesis for TTS)
 - **SOS Messaging**: Telegram Bot API (primary), Twilio WhatsApp Sandbox (secondary)
@@ -42,7 +43,7 @@ All pages are locale-prefixed: `src/app/[locale]/`. The root layout (`src/app/la
 **Pages**: home, auth, chat, exercises (breathing, grounding), journal, library (with `[slug]` dynamic), settings/contacts
 
 ### AppShell Layout
-`AppShell` renders: `Header` (sticky top, glassmorphism) → `<main>` (with `pb-24` for bottom nav clearance) → `SOSButton` (fixed bottom-right, always visible) → `BottomNav` (fixed bottom, 5 tabs)
+`AppShell` renders: `Header` (sticky top, glassmorphism, with language toggle + profile icon) → `<main>` (with `pb-24` for bottom nav clearance) → `SOSButton` (fixed bottom-right, always visible) → `BottomNav` (fixed bottom, 5 tabs: Home, Chat, Exercises, Journal, Library)
 
 ### Key Directories
 ```
@@ -67,7 +68,14 @@ src/
 - **Entities**: `$users`, `profiles`, `emergencyContacts`, `journalEntries`, `deviceTokens`
 - **Links**: profileOwner (1:1), contactOwner (M:1), journalOwner (M:1)
 - **Permissions**: CEL-based, `isOwner` pattern binding `auth.id in data.ref('owner.id')`
-- Push schema/perms: `npx instant-cli push-schema` / `npx instant-cli push-perms`
+- Push schema/perms: `npx instant-cli push schema --yes` / `npx instant-cli push perms --yes`
+
+### Authentication (InstantDB)
+Simple email magic code authentication via `useAuth` hook:
+- **Email Magic Code** — `sendMagicCode(email)` → `signInWithMagicCode(email, code)`
+- **Access**: Profile icon in Header (top-right) links to `/auth` page
+- **UI Flow**: Two-step form (email input → code verification)
+- **Session**: InstantDB manages auth state via `db.useAuth()`
 
 ### API Route Patterns
 All routes use in-memory rate limiting (bounded Map, 10k entries max):
@@ -150,7 +158,7 @@ Agent definition files in `agents/`. Read the full file for detailed principles:
 
 ```
 NEXT_PUBLIC_INSTANT_APP_ID, INSTANT_ADMIN_TOKEN
-GEMINI_API_KEY                  # Get from https://aistudio.google.com/apikey (FREE, 1500 req/day)
+GEMINI_API_KEY                          # Get from https://aistudio.google.com/apikey (FREE, 1500 req/day)
 TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET
 TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM
 ```
