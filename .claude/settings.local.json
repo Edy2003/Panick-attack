@@ -21,7 +21,12 @@
       "Bash(git checkout:*)",
       "Bash(git commit:*)",
       "Bash(git log:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run lint:*)",
+      "Bash(test:*)",
+      "Bash(xxd:*)"
     ]
   }
 }
