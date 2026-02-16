@@ -80,6 +80,163 @@
     "manageContacts": "Manage contacts",
     "skipAuth": "Continue without signing in"
   },
+  "exercises": {
+    "title": "Exercises",
+    "description": "Choose an exercise to help you calm down",
+    "breathing": "Breathing Exercises",
+    "breathingDesc": "Controlled breathing to reduce anxiety",
+    "grounding": "Grounding 5-4-3-2-1",
+    "groundingDesc": "Reconnect with reality through 5 senses"
+  },
+  "breathing": {
+    "title": "Breathing Exercises",
+    "description": "Choose a technique and follow the animation. Breathe calmly and steadily.",
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop",
+    "restart": "Again",
+    "backToExercises": "Back to exercises",
+    "finished": "Well done!",
+    "finishedDesc": "You've completed the exercise. How do you feel?",
+    "cycle": "Cycle",
+    "cycles": "cycles",
+    "sec": "s",
+    "seconds": "s",
+    "phase": {
+      "inhale": "Inhale",
+      "hold": "Hold",
+      "exhale": "Exhale",
+      "holdAfterExhale": "Hold"
+    },
+    "patterns": {
+      "box": {
+        "name": "Box Breathing"
+      },
+      "fourSevenEight": {
+        "name": "4-7-8 Technique"
+      },
+      "diaphragmatic": {
+        "name": "Diaphragmatic"
+      },
+      "physiologicalSigh": {
+        "name": "Physiological Sigh"
+      }
+    }
+  },
+  "journal": {
+    "title": "Anxiety Journal",
+    "description": "Track your panic attacks, triggers, and progress",
+    "addEntry": "New entry",
+    "noEntries": "No entries yet. Add your first one after a panic attack.",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "exportCSV": "Export CSV",
+    "min": "min",
+    "anxietyLevel": "Anxiety level",
+    "levelLow": "Calm",
+    "levelHigh": "Very strong",
+    "triggers": "Triggers",
+    "symptoms": "Symptoms",
+    "copingTechniques": "What helped",
+    "duration": "Duration",
+    "notes": "Notes",
+    "notesPlaceholder": "How did you feel? What helped?",
+    "chartTitle": "Anxiety level over the last 2 weeks",
+    "totalEntries": "Total entries",
+    "avgLevel": "Average level",
+    "triggerOptions": {
+      "work": "Work",
+      "social": "Social situations",
+      "health": "Health",
+      "finances": "Finances",
+      "relationships": "Relationships",
+      "sleep": "Poor sleep",
+      "caffeine": "Caffeine",
+      "unknown": "Unknown"
+    },
+    "symptomOptions": {
+      "heartRacing": "Heart racing",
+      "breathShort": "Shortness of breath",
+      "dizziness": "Dizziness",
+      "sweating": "Sweating",
+      "trembling": "Trembling",
+      "nausea": "Nausea",
+      "chestPain": "Chest pain",
+      "derealisation": "Derealisation"
+    },
+    "copingOptions": {
+      "breathing": "Breathing",
+      "grounding": "Grounding",
+      "talking": "Talking",
+      "walking": "Walking",
+      "medication": "Medication",
+      "music": "Music",
+      "cold": "Cold water",
+      "nothing": "Nothing"
+    }
+  },
+  "grounding": {
+    "backToExercises": "Back to exercises",
+    "title": "Grounding 5-4-3-2-1",
+    "introTitle": "Grounding Technique",
+    "introDesc": "This exercise will help you reconnect with reality through your 5 senses. Name things around you.",
+    "begin": "Begin",
+    "step": "Step",
+    "allDone": "Done!",
+    "inputPlaceholder": "Type or say...",
+    "add": "Add",
+    "stepComplete": "Great! Let's move on",
+    "next": "Next",
+    "finish": "Finish",
+    "finishedTitle": "Well done!",
+    "finishedDesc": "You've completed all 5 steps. You are here, you are safe. How do you feel?",
+    "tryAgain": "Try again",
+    "steps": {
+      "0": {
+        "title": "Name 5 things you can see",
+        "hint": "Look around. What catches your attention?"
+      },
+      "1": {
+        "title": "Name 4 things you can touch",
+        "hint": "What do you feel right now?"
+      },
+      "2": {
+        "title": "Name 3 sounds you can hear",
+        "hint": "Pause and listen."
+      },
+      "3": {
+        "title": "Name 2 things you can smell",
+        "hint": "What can you smell?"
+      },
+      "4": {
+        "title": "Name 1 thing you can taste",
+        "hint": "What taste do you notice right now?"
+      }
+    }
+  },
+  "library": {
+    "title": "Library",
+    "description": "Helpful resources about panic attacks and anxiety management",
+    "searchPlaceholder": "Search articles...",
+    "clearSearch": "Clear search",
+    "allArticles": "All",
+    "bookmarked": "Saved",
+    "noResults": "No articles found",
+    "addBookmark": "Save",
+    "removeBookmark": "Remove from saved",
+    "source": "Source",
+    "backToLibrary": "Back to library",
+    "notFound": "Article not found",
+    "categories": {
+      "psychoeducation": "Psychoeducation",
+      "techniques": "Techniques",
+      "support": "Support",
+      "professional": "Professionals"
+    }
+  },
   "safety": {
     "crisisLine": "Lifeline Ukraine",
     "crisisNumber": "7333",
