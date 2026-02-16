@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useAuth } from "./useAuth";
 
 const COUNTDOWN_SECONDS = 3;
@@ -80,6 +80,12 @@ export function useSOS(language: "uk" | "en" = "uk") {
         return;
       }
 
+      // Clear any existing countdown to prevent multiple intervals
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+
       abortRef.current = false;
       setIsCountdown(true);
       setCountdown(COUNTDOWN_SECONDS);
@@ -110,11 +116,23 @@ export function useSOS(language: "uk" | "en" = "uk") {
 
   const cancelCountdown = useCallback(() => {
     abortRef.current = true;
-    if (countdownRef.current) clearInterval(countdownRef.current);
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
     setIsCountdown(false);
     setCountdown(COUNTDOWN_SECONDS);
     setLastResult(null);
     setError(null);
+  }, []);
+
+  // Cleanup interval on unmount to prevent memory leaks and duplicate sends
+  useEffect(() => {
+    return () => {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+      }
+    };
   }, []);
 
   return {
