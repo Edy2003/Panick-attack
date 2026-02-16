@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Send, Loader2, Mic, Keyboard } from "lucide-react";
+import { Send, Loader2, Mic, Keyboard, Languages } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
@@ -14,18 +14,26 @@ interface VoiceChatProps {
 }
 
 type InputMode = "voice" | "text";
+type AILanguage = "uk" | "en";
+
+const AI_LANGUAGE_KEY = "panic-helper:ai-language";
 
 export function VoiceChat({ language }: VoiceChatProps) {
   const t = useTranslations("chat");
   const [textInput, setTextInput] = useState("");
   const [inputMode, setInputMode] = useState<InputMode>("voice");
+  const [aiLanguage, setAILanguage] = useState<AILanguage>(() => {
+    if (typeof window === "undefined") return language;
+    const saved = localStorage.getItem(AI_LANGUAGE_KEY);
+    return (saved === "uk" || saved === "en") ? saved : language;
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastSpokenRef = useRef<string | null>(null);
 
-  const { messages, isLoading, error, sendMessage } = useChat({ language });
+  const { messages, isLoading, error, sendMessage } = useChat({ language: aiLanguage });
 
   const { speak, stop: stopSpeaking, isSpeaking, isSupported: ttsSupported } =
-    useSpeechSynthesis({ language });
+    useSpeechSynthesis({ language: aiLanguage });
 
   const handleResult = useCallback(
     (transcript: string) => {
@@ -42,9 +50,17 @@ export function VoiceChat({ language }: VoiceChatProps) {
     startListening,
     stopListening,
   } = useSpeechRecognition({
-    language,
+    language: aiLanguage,
     onResult: handleResult,
   });
+
+  const toggleAILanguage = useCallback(() => {
+    const newLang: AILanguage = aiLanguage === "uk" ? "en" : "uk";
+    setAILanguage(newLang);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(AI_LANGUAGE_KEY, newLang);
+    }
+  }, [aiLanguage]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -88,31 +104,44 @@ export function VoiceChat({ language }: VoiceChatProps) {
 
   return (
     <div className="flex h-[calc(100dvh-8rem)] flex-col">
-      {/* Mode Toggle */}
-      <div className="mb-3 flex items-center justify-center gap-2">
+      {/* Mode Toggle & Language Switcher */}
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setInputMode("voice")}
+            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+              inputMode === "voice"
+                ? "bg-calm-blue text-white"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+            aria-label={t("voiceMode")}
+          >
+            <Mic className="h-4 w-4" />
+            {t("voiceMode")}
+          </button>
+          <button
+            onClick={() => setInputMode("text")}
+            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+              inputMode === "text"
+                ? "bg-calm-blue text-white"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+            aria-label={t("textMode")}
+          >
+            <Keyboard className="h-4 w-4" />
+            {t("textMode")}
+          </button>
+        </div>
+
+        {/* Language Toggle */}
         <button
-          onClick={() => setInputMode("voice")}
-          className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-            inputMode === "voice"
-              ? "bg-calm-blue text-white"
-              : "bg-muted text-muted-foreground hover:bg-muted/80"
-          }`}
-          aria-label={t("voiceMode")}
+          onClick={toggleAILanguage}
+          className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-muted/80"
+          aria-label={t("switchLanguage")}
+          title={t("switchLanguage")}
         >
-          <Mic className="h-4 w-4" />
-          {t("voiceMode")}
-        </button>
-        <button
-          onClick={() => setInputMode("text")}
-          className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-            inputMode === "text"
-              ? "bg-calm-blue text-white"
-              : "bg-muted text-muted-foreground hover:bg-muted/80"
-          }`}
-          aria-label={t("textMode")}
-        >
-          <Keyboard className="h-4 w-4" />
-          {t("textMode")}
+          <Languages className="h-3.5 w-3.5" />
+          <span className="uppercase">{aiLanguage}</span>
         </button>
       </div>
 

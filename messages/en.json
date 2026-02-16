@@ -49,7 +49,8 @@
     "textMode": "Text",
     "listeningHint": "I'm listening... Speak now",
     "tapToSpeak": "Tap to speak",
-    "speaking": "Speaking response..."
+    "speaking": "Speaking response...",
+    "switchLanguage": "Switch conversation language"
   },
   "settings": {
     "contacts": "Emergency Contacts",
