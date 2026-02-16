@@ -1,18 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/db-admin";
 import { id } from "@instantdb/admin";
+import { getAuthenticatedUser } from "@/lib/auth/get-auth-user";
 
 export async function POST(request: NextRequest) {
   try {
-    // Get authenticated user ID
-    const userId = request.headers.get("x-instant-user-id");
+    // Get authenticated user from secure cookies
+    const user = await getAuthenticatedUser(request);
 
-    if (!userId) {
+    if (!user) {
       return NextResponse.json(
         { error: "User not authenticated" },
         { status: 401 }
       );
     }
+
+    const userId = user.id;
 
     // Check max invites (10 per user)
     const existingContacts = await adminDb.query({

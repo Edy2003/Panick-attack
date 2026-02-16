@@ -6,8 +6,8 @@ export interface JournalEntry {
   triggers: string[];
   symptoms: string[];
   copingTechniques: string[];
-  durationMinutes: number;
-  notes: string;
+  durationMinutes?: number;
+  notes?: string;
   createdAt: number; // timestamp
 }
 
@@ -138,8 +138,8 @@ export function exportEntries(
     sanitize(e.triggers.join(", ")),
     sanitize(e.symptoms.join(", ")),
     sanitize(e.copingTechniques.join(", ")),
-    e.durationMinutes.toString(),
-    sanitize(e.notes),
+    (e.durationMinutes ?? 0).toString(),
+    sanitize(e.notes ?? ""),
   ]);
 
   const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");

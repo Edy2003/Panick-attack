@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendTelegramMessage } from "@/lib/messaging/telegram";
 import { formatSOSMessage } from "@/lib/messaging/message-template";
 import { adminDb } from "@/lib/db-admin";
+import { getAuthenticatedUser } from "@/lib/auth/get-auth-user";
 
 const MAX_SOS_PER_10MIN = 5;
 const MAX_SOS_LIMITER_ENTRIES = 10000;
@@ -42,15 +43,17 @@ interface SOSRequestBody {
 
 export async function POST(request: NextRequest) {
   try {
-    // Get authenticated user ID
-    const userId = request.headers.get("x-instant-user-id");
+    // Get authenticated user from secure cookies
+    const user = await getAuthenticatedUser(request);
 
-    if (!userId) {
+    if (!user) {
       return NextResponse.json(
         { error: "User not authenticated" },
         { status: 401 }
       );
     }
+
+    const userId = user.id;
 
     // Check rate limit
     if (!checkSOSRateLimit(userId)) {
@@ -82,6 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user profile for display name
+    // Note: profile might be undefined if user hasn't completed profile setup
     const profileResult = await adminDb.query({
       profiles: {
         $: { where: { "owner.id": userId } },
@@ -89,6 +93,7 @@ export async function POST(request: NextRequest) {
     });
 
     const profile = profileResult.profiles[0];
+    // Safe fallback chain: use displayName, then telegramFirstName, then default
     const userName =
       profile?.displayName ||
       profile?.telegramFirstName ||

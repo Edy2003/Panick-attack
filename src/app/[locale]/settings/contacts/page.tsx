@@ -21,7 +21,7 @@ export default function ContactsPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Query user's contacts
+  // Query user's contacts (skip query entirely if not authenticated)
   const { data, isLoading } = db.useQuery(
     isAuthenticated && user
       ? {
@@ -29,7 +29,7 @@ export default function ContactsPage() {
             $: { where: { "owner.id": user.id } },
           },
         }
-      : { emergencyContacts: {} }
+      : null
   );
 
   const contacts = data?.emergencyContacts || [];
@@ -46,9 +46,7 @@ export default function ContactsPage() {
     try {
       const response = await fetch("/api/contacts/invite", {
         method: "POST",
-        headers: {
-          "X-Instant-User-Id": user.id,
-        },
+        credentials: "include", // Include cookies for authentication
       });
 
       const data = await response.json();

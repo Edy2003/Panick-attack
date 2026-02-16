@@ -43,9 +43,9 @@ export function useSOS(language: "uk" | "en" = "uk") {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-Instant-User-Id": user.id,
           },
           body: JSON.stringify({ location, language }),
+          credentials: "include", // Include cookies for authentication
         });
 
         const data = await response.json();

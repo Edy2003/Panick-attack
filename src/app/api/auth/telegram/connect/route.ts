@@ -4,6 +4,7 @@ import {
   type TelegramAuthData,
 } from "@/lib/auth/telegram-auth";
 import { adminDb } from "@/lib/db-admin";
+import { getAuthenticatedUser } from "@/lib/auth/get-auth-user";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,16 +18,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get InstantDB user ID from the user object in the request
-    // The client will need to include this when calling the API
-    const userId = request.headers.get("x-instant-user-id");
+    // Get authenticated user from secure cookies
+    const user = await getAuthenticatedUser(request);
 
-    if (!userId) {
+    if (!user) {
       return NextResponse.json(
         { error: "User not authenticated" },
         { status: 401 }
       );
     }
+
+    const userId = user.id;
 
     // Find user's profile
     const result = await adminDb.query({

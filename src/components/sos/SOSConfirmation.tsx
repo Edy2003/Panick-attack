@@ -20,7 +20,6 @@ interface SOSConfirmationProps {
   error: string | null;
   lastResult: Array<{
     contactId: string;
-    channel: string;
     status: "sent" | "failed";
     error?: string;
   }> | null;
