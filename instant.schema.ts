@@ -9,15 +9,24 @@ const _schema = i.schema({
       displayName: i.string().optional(),
       language: i.string(), // 'uk' | 'en'
       isGuest: i.boolean(), // Track if user is anonymous/guest
+      // Telegram OAuth fields
+      telegramUserId: i.string().unique().optional().indexed(),
+      telegramUsername: i.string().optional(),
+      telegramFirstName: i.string().optional(),
+      telegramPhotoUrl: i.string().optional(),
+      telegramAuthDate: i.number().optional(),
       createdAt: i.date(),
       updatedAt: i.date(),
     }),
     emergencyContacts: i.entity({
-      name: i.string(),
-      telegramChatId: i.string().optional(),
-      telegramUsername: i.string().optional(),
-      telegramLinkToken: i.string().unique().optional().indexed(),
-      whatsappNumber: i.string().optional(),
+      displayName: i.string(),
+      telegramChatId: i.string().indexed(), // Required: the Telegram chat ID
+      telegramChatType: i.string(), // 'private' | 'group' | 'supergroup'
+      telegramChatTitle: i.string().optional(), // For groups
+      telegramChatPhoto: i.string().optional(),
+      inviteToken: i.string().unique().indexed(), // Unique invite token
+      invitedAt: i.date(), // When invite was generated
+      acceptedAt: i.date().optional(), // When invite was accepted (null = pending)
       isActive: i.boolean(),
       createdAt: i.date(),
       updatedAt: i.date(),
@@ -30,11 +39,6 @@ const _schema = i.schema({
       durationMinutes: i.number().optional(),
       notes: i.string().optional(),
       createdAt: i.date().indexed(),
-    }),
-    deviceTokens: i.entity({
-      token: i.string().unique().indexed(),
-      contacts: i.json<DeviceContact[]>(),
-      createdAt: i.date(),
     }),
   },
   links: {
@@ -52,13 +56,6 @@ const _schema = i.schema({
     },
   },
 });
-
-interface DeviceContact {
-  name: string;
-  telegramChatId?: string;
-  telegramUsername?: string;
-  whatsappNumber?: string;
-}
 
 type _AppSchema = typeof _schema;
 interface AppSchema extends _AppSchema {}

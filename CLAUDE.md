@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 PanicAttack Helper — free PWA for helping people with anxiety disorder during panic attacks. Voice AI assistant (CBT/grounding protocols), SOS button for alerting emergency contacts via Telegram/WhatsApp, breathing exercises, anxiety journal.
 
-**PRD**: `docs/prd.md` | **Architecture**: `docs/architect.md` | **Tasks**: `docs/tasks.md`
+**PRD**: `docs/prd.md` | **Architecture**: `docs/architect.md` | **Tasks**: `docs/tasks.md` | **SOS Redesign**: `docs/sos-redesign.md`
 
 ## Tech Stack
 
@@ -19,7 +19,7 @@ PanicAttack Helper — free PWA for helping people with anxiety disorder during 
 - **Auth**: InstantDB built-in email magic code authentication. User profile accessible via Header icon.
 - **AI**: Google Gemini 2.5 Flash (gemini-2.5-flash, FREE tier — 1500 req/day) via `/api/chat` route
 - **Voice**: Web Speech API (SpeechRecognition for STT, SpeechSynthesis for TTS)
-- **SOS Messaging**: Telegram Bot API (primary), Twilio WhatsApp Sandbox (secondary)
+- **SOS Messaging**: Telegram Bot API with invite-based contact system (Telegram Login Widget + `/start` token flow)
 - **PWA**: Serwist (not yet configured — TASK-014)
 - **Hosting**: Vercel (Free Hobby Plan)
 - **Testing**: Vitest + React Testing Library + Playwright (deps installed, no configs or tests written yet)
@@ -50,10 +50,10 @@ All pages are locale-prefixed: `src/app/[locale]/`. The root layout (`src/app/la
 src/
 ├── app/api/          # Route handlers: chat, sos, contacts, contacts/[id], telegram/webhook
 ├── components/       # Feature-grouped: auth, chat, exercises, journal, layout, library, sos, ui (shadcn)
-├── hooks/            # useAuth, useChat, useSOS, useBreathingExercise, useGroundingExercise, useJournal (localStorage), useJournalDB (InstantDB), useSpeechRecognition, useSpeechSynthesis
+├── hooks/            # useAuth, useChat, useSOS (requires auth), useBreathingExercise, useGroundingExercise, useJournal (localStorage), useJournalDB (InstantDB), useSpeechRecognition, useSpeechSynthesis
 ├── lib/
 │   ├── ai/           # chat-service, safety-filter, system-prompt
-│   ├── auth/         # device-token (anonymous SOS auth via localStorage UUID)
+│   ├── auth/         # telegram-auth (Telegram Login Widget hash verification)
 │   ├── content/      # articles (6 articles × 2 languages, hardcoded)
 │   ├── exercises/    # breathing-patterns (4 techniques with phase timings + colors)
 │   ├── messaging/    # telegram, whatsapp, message-template
@@ -65,10 +65,32 @@ src/
 ### Database (InstantDB)
 - **Client**: `src/lib/db.ts` — `init()` from `@instantdb/react` with schema
 - **Admin** (server-side): `src/lib/db-admin.ts` — `init()` from `@instantdb/admin`
-- **Entities**: `$users`, `profiles`, `emergencyContacts`, `journalEntries`, `deviceTokens`
+- **Entities**:
+  - `$users` — InstantDB managed users
+  - `profiles` — user profile with Telegram OAuth fields (telegramUserId, telegramUsername, telegramFirstName, telegramPhotoUrl, telegramAuthDate)
+  - `emergencyContacts` — invite-based contacts (displayName, telegramChatId, telegramChatType, telegramChatTitle, telegramChatPhoto, inviteToken, invitedAt, acceptedAt, isActive)
+  - `journalEntries` — anxiety journal entries
 - **Links**: profileOwner (1:1), contactOwner (M:1), journalOwner (M:1)
 - **Permissions**: CEL-based, `isOwner` pattern binding `auth.id in data.ref('owner.id')`
 - Push schema/perms: `npx instant-cli push schema --yes` / `npx instant-cli push perms --yes`
+
+### SOS System Architecture
+**Design Document**: See `docs/sos-redesign.md` for full implementation plan.
+
+**Flow**:
+1. User authenticates via email magic code
+2. User optionally connects Telegram account via Telegram Login Widget (Phase 2)
+3. User generates unique invite link in app → shares to Telegram chats (private or groups)
+4. Recipients click invite link → bot captures chat_id and metadata via `/start` command
+5. When SOS triggered, bot sends message to all linked chat_ids
+
+**Key Features**:
+- Invite-based contact system (no chat list selection due to Telegram API privacy restrictions)
+- Supports both private chats and groups
+- Automatic chat metadata capture (name, type, photo)
+- QR code generation for easy sharing
+- Requires user authentication (no anonymous device tokens)
+- Max 10 contacts per user
 
 ### Authentication (InstantDB)
 Simple email magic code authentication via `useAuth` hook:
@@ -80,9 +102,10 @@ Simple email magic code authentication via `useAuth` hook:
 ### API Route Patterns
 All routes use in-memory rate limiting (bounded Map, 10k entries max):
 - `/api/chat`: 60 req/hr per IP, 30 messages/session, 500 char limit. Pre-send + post-receive safety filtering
-- `/api/sos`: 5 req/10min per device token. Auth via `X-Device-Token` header. Contacts resolved server-side
-- `/api/contacts`: CRUD for device token contacts. Max 10 per device
-- `/api/telegram/webhook`: Verifies secret with timing-safe comparison. Links Telegram chatId on `/start` command
+- `/api/sos`: 5 req/10min per user. Auth via InstantDB token. Queries user's emergencyContacts, sends to all active telegramChatIds
+- `/api/contacts/invite`: POST generates unique invite token, creates pending contact, returns Telegram deep link (`t.me/bot?start=token`)
+- `/api/telegram/webhook`: Verifies secret with timing-safe comparison. On `/start <token>`, finds contact by inviteToken, captures chat metadata, marks as accepted
+- `/api/auth/telegram/callback`: POST verifies Telegram Login Widget hash (HMAC-SHA256), updates user profile with Telegram data
 
 ### Safety System
 `src/lib/ai/safety-filter.ts` provides two-pass filtering:
@@ -93,9 +116,7 @@ All routes use in-memory rate limiting (bounded Map, 10k entries max):
 Namespaces: `common`, `home`, `nav`, `sos`, `chat`, `settings`, `auth`, `exercises`, `breathing`, `journal`, `grounding`, `library`, `safety`. Usage: `const t = useTranslations("namespace"); t("key")`
 
 ### localStorage Keys
-- `panic-helper:device-token` — anonymous device UUID for SOS
-- `panic-helper:sos-queue` — offline SOS message queue
-- `panic-helper:journal` — journal entries (array of JournalEntry)
+- `panic-helper:journal` — journal entries (array of JournalEntry, migrated to InstantDB on first auth)
 - `panic-helper:bookmarks` — bookmarked article slugs
 
 ## Coding Conventions
@@ -160,5 +181,6 @@ Agent definition files in `agents/`. Read the full file for detailed principles:
 NEXT_PUBLIC_INSTANT_APP_ID, INSTANT_ADMIN_TOKEN
 GEMINI_API_KEY                          # Get from https://aistudio.google.com/apikey (FREE, 1500 req/day)
 TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET
+NEXT_PUBLIC_TELEGRAM_BOT_USERNAME       # Telegram bot username without @ (for Login Widget and invite links)
 TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM
 ```
