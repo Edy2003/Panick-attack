@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { usePathname, useRouter } from "next/navigation";
-import { Send, Loader2, Mic, Keyboard, Languages } from "lucide-react";
+import { Send, Loader2, Mic, Keyboard } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
@@ -18,8 +17,6 @@ type InputMode = "voice" | "text";
 
 export function VoiceChat({ language }: VoiceChatProps) {
   const t = useTranslations("chat");
-  const router = useRouter();
-  const pathname = usePathname();
   const [textInput, setTextInput] = useState("");
   const [inputMode, setInputMode] = useState<InputMode>("voice");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -48,12 +45,6 @@ export function VoiceChat({ language }: VoiceChatProps) {
     language,
     onResult: handleResult,
   });
-
-  const toggleLanguage = useCallback(() => {
-    const newLocale = language === "uk" ? "en" : "uk";
-    const newPath = pathname.replace(`/${language}`, `/${newLocale}`);
-    router.push(newPath);
-  }, [language, pathname, router]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -96,51 +87,38 @@ export function VoiceChat({ language }: VoiceChatProps) {
   };
 
   return (
-    <div className="flex h-[calc(100dvh-8rem)] flex-col px-4">
-      {/* Mode Toggle & Language Switcher */}
-      <div className="mb-4 mt-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setInputMode("voice")}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-              inputMode === "voice"
-                ? "bg-calm-blue text-white"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
-            aria-label={t("voiceMode")}
-          >
-            <Mic className="h-4 w-4" />
-            {t("voiceMode")}
-          </button>
-          <button
-            onClick={() => setInputMode("text")}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-              inputMode === "text"
-                ? "bg-calm-blue text-white"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
-            aria-label={t("textMode")}
-          >
-            <Keyboard className="h-4 w-4" />
-            {t("textMode")}
-          </button>
-        </div>
-
-        {/* Language Toggle */}
+    <div className="flex h-[calc(100dvh-8rem)] flex-col">
+      {/* Mode Toggle */}
+      <div className="mb-3 flex items-center justify-center gap-2 px-4 pt-2">
         <button
-          onClick={toggleLanguage}
-          className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-muted/80"
-          aria-label={t("switchLanguage")}
-          title={t("switchLanguage")}
+          onClick={() => setInputMode("voice")}
+          className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+            inputMode === "voice"
+              ? "bg-calm-blue text-white"
+              : "bg-muted text-muted-foreground hover:bg-muted/80"
+          }`}
+          aria-label={t("voiceMode")}
         >
-          <Languages className="h-3.5 w-3.5" />
-          <span className="uppercase">{language}</span>
+          <Mic className="h-4 w-4" />
+          {t("voiceMode")}
+        </button>
+        <button
+          onClick={() => setInputMode("text")}
+          className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+            inputMode === "text"
+              ? "bg-calm-blue text-white"
+              : "bg-muted text-muted-foreground hover:bg-muted/80"
+          }`}
+          aria-label={t("textMode")}
+        >
+          <Keyboard className="h-4 w-4" />
+          {t("textMode")}
         </button>
       </div>
 
       {/* Messages */}
       <div
-        className="flex-1 space-y-3 overflow-y-auto pb-4"
+        className="flex-1 space-y-3 overflow-y-auto px-4 pb-4"
         role="log"
         aria-live="polite"
       >
@@ -166,14 +144,14 @@ export function VoiceChat({ language }: VoiceChatProps) {
 
       {/* Error */}
       {error && (
-        <div className="mb-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className="mx-4 mb-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {error}
         </div>
       )}
 
       {/* Input - Voice Mode */}
       {inputMode === "voice" && sttSupported && (
-        <div className="flex flex-col items-center gap-3 border-t border-border/50 pt-4">
+        <div className="flex flex-col items-center gap-3 border-t border-border/50 px-4 pt-4">
           <p className="text-sm text-muted-foreground">
             {isListening
               ? t("listeningHint")
@@ -203,7 +181,7 @@ export function VoiceChat({ language }: VoiceChatProps) {
 
       {/* Input - Text Mode */}
       {inputMode === "text" && (
-        <div className="flex items-center gap-2 border-t border-border/50 pt-3">
+        <div className="flex items-center gap-2 border-t border-border/50 px-4 pt-3">
           <form onSubmit={handleTextSubmit} className="flex flex-1 gap-2">
             <input
               type="text"

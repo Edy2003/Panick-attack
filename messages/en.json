@@ -8,7 +8,8 @@
     "save": "Save",
     "delete": "Delete",
     "back": "Back",
-    "close": "Close"
+    "close": "Close",
+    "switchLanguage": "Switch language"
   },
   "home": {
     "hero": "You are safe",
